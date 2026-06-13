@@ -101,9 +101,9 @@ src/
     PlanValidator.ts
   layout/
     LayoutEngine.ts
+    DagreFlowLayout.ts
+    TreeMindMapLayout.ts
     GridLayout.ts
-    FlowLayout.ts
-    MindMapLayout.ts
     IncrementalLayout.ts
   speech/
     SpeechOrchestrator.ts
@@ -149,6 +149,27 @@ type VoiceState =
 
 `SpeechOrchestrator` owns STT, TTS, barge-in behavior, and state transitions.
 
+### Async Control and Command Queue
+
+Voice interactions are asynchronous. The state machine must therefore include explicit cancellation and reconciliation rules.
+
+Use a single `InteractionController` to coordinate:
+
+- Current voice state.
+- Active `AbortController` for LLM/STT requests.
+- Current `pendingPlan`.
+- Command queue.
+- Latest `ProjectState.version`.
+
+Rules:
+
+- Every LLM planning request captures the current `ProjectState.version`.
+- If the user issues a new command while planning is in progress, the new command is routed immediately.
+- If the new command cancels or replaces the plan, abort the in-flight LLM request.
+- If the LLM returns after the canvas version changed, do not auto-apply its plan. Revalidate it against the current state and either refresh the plan or ask for confirmation.
+- Rendering commands are serialized through `CommandManager` so two operations cannot mutate `ProjectState` at the same time.
+- Destructive voice commands during `executing` are queued until the current macro command finishes, then executed against the updated state.
+
 ### STT Strategy
 
 The MVP uses browser Web Speech first. In mainland China, Chrome Web Speech is unreliable because it depends on Google services; Edge is more likely to work because it uses Microsoft/Azure infrastructure.
@@ -166,6 +187,7 @@ The text input is a compatibility/debug fallback, not the strict voice-only acce
 When TTS is speaking and the microphone detects user speech:
 
 - Stop TTS immediately.
+- Abort any interruptible planning request if the user says cancel, stop, or starts a replacement instruction.
 - Stop any thinking or speaking earcon.
 - Pause the current `pendingPlan`.
 - Route the new utterance as cancel, confirm, modify, or a new instruction.
@@ -219,9 +241,21 @@ When a command contains entity references such as "数据库", "左边那个红�
 The resolver should:
 
 - Search labels, IDs, aliases, shape type, group, selected element, position, and style.
-- Execute directly only if one candidate is clearly identified.
+- Score candidates with heuristics before asking for clarification.
+- Execute directly if the top candidate passes the confidence threshold.
 - Ask for clarification or fall back to Agent if multiple candidates match.
 - Include candidate ID mappings in the Agent context so the LLM can output commands against concrete IDs.
+
+Entity scoring should prefer:
+
+- Currently selected element.
+- Recently created or modified elements.
+- Elements visible in the current viewport.
+- Elements close to the spatial phrase in the transcript, such as left, right, top, bottom, center.
+- Exact label or alias matches over fuzzy matches.
+- Elements in the active group or recent subgraph.
+
+Only ask a clarification question when the top candidates are too close in score or the command is destructive. This avoids frequent voice interruptions such as "which rectangle do you mean?" during normal flow.
 
 ## 7. AgentPlan
 
@@ -299,7 +333,40 @@ Supported operations:
 - Export project JSON.
 - Auto-save to localStorage and restore on next visit.
 
-## 9. Fabric Group Rule
+## 9. Undo and Redo
+
+Undo/redo must support both small local edits and large Agent-generated changes.
+
+Use command sourcing with immutable `ProjectState` updates:
+
+- Every executable action is a command.
+- Commands are applied through `CommandManager`.
+- Commands return the next immutable `ProjectState`.
+- A complex Agent operation is wrapped as one `MacroCommand`.
+- Undoing a `MacroCommand` reverts the whole user-visible action, not each internal node creation one by one.
+
+Recommended implementation:
+
+```ts
+interface Command {
+  id: string
+  label: string
+  apply(state: ProjectState): ProjectState
+  invert(before: ProjectState, after: ProjectState): Command
+}
+```
+
+For MVP simplicity, each command can store compact before/after snapshots at `ProjectState` level. If snapshot size becomes a problem later, replace this with structural patches. The user-facing behavior must stay the same.
+
+Undo stack rules:
+
+- A confirmed Agent plan is one undo step.
+- A local voice edit is one undo step.
+- Auto-layout caused by a command is included in that command's undo step.
+- Failed validation and canceled pending plans do not enter history.
+- Debug mouse dragging is committed as one command at drag end, not every pointer movement.
+
+## 10. Fabric Group Rule
 
 Do not use native `fabric.Group` for application groups.
 
@@ -325,7 +392,7 @@ MoveGroupCommand(groupId, dx, dy)
 
 Mouse or touch dragging in debug mode must still route through the command system.
 
-## 10. Connections
+## 11. Connections
 
 Connectors store logical references, not fixed endpoint coordinates.
 
@@ -359,7 +426,7 @@ MVP connector rules:
 - Labels sit near the line midpoint.
 - Advanced obstacle avoidance and draw.io-style orthogonal routing are future work.
 
-## 11. Layout
+## 12. Layout
 
 LLMs should output logic and relationships, not exact positions.
 
@@ -376,13 +443,23 @@ interface LayoutIntent {
 MVP layout strategies:
 
 - `grid`: fallback layout for boards, notes, story maps, entertainment content.
-- `flow`: lightweight layered layout for flowcharts and architecture diagrams.
-- `mindmap`: simplified center-out tree layout.
+- `flow`: use a small adapter around dagre for flowcharts and architecture diagrams.
+- `mindmap`: use d3-hierarchy tree layout for parent-child mind maps.
 - `incremental`: add new related elements near their anchors without re-laying out the whole canvas.
+
+Do not hand-roll full flowchart or mind map layout algorithms in the MVP. Layout is a product dependency, not the product's core innovation. The MVP should spend complexity budget on voice routing, Agent planning, state reconciliation, and canvas execution.
 
 Initial generation can use global layout. Later additions should usually use incremental layout. If the user has manually moved an element, mark it `manualLocked`; do not re-layout that element unless the user says "重新排版" or similar.
 
-## 12. CanvasDescriber
+Implementation notes:
+
+- Use dagre for `flow` global layout.
+- Use d3-hierarchy for `mindmap` global layout.
+- Keep adapters thin so the rest of the app depends only on `LayoutEngine`.
+- Use a simple local grid fallback if a layout library fails or times out.
+- Incremental layout can remain simple: place new nodes near anchor elements, avoid overlapping bounding boxes, and preserve existing manual positions.
+
+## 13. CanvasDescriber
 
 The Agent must not receive full Fabric JSON for every turn.
 
@@ -411,7 +488,7 @@ Default summary excludes:
 
 When the canvas grows large, summarize by group and include only selected elements, nearby subgraphs, and recent changes.
 
-## 13. UI
+## 14. UI
 
 The first screen should be the working canvas, not a landing page.
 
@@ -433,7 +510,7 @@ Main regions:
 
 Click and text controls are usability fallbacks. The strict acceptance path must remain voice-only after initial permission.
 
-## 14. Deployment and Risk Control
+## 15. Deployment and Risk Control
 
 ### Production
 
@@ -479,7 +556,7 @@ Local in-memory limits are allowed only as development safeguards.
 
 The frontend-only mode can demonstrate templates and canvas behavior, but it cannot safely provide a system-owned LLM key. This mode must be documented as degraded.
 
-## 15. Testing and Acceptance
+## 16. Testing and Acceptance
 
 ### Required Acceptance Scenarios
 
@@ -505,6 +582,8 @@ Unit tests:
 - LayoutEngine.
 - ConnectionUpdater.
 - AgentPlan schema validation.
+- CommandManager macro undo/redo.
+- InteractionController abort and stale-plan reconciliation.
 
 Integration tests:
 
@@ -512,6 +591,8 @@ Integration tests:
 - Incremental layout does not move `manualLocked` existing elements.
 - Connector endpoints update after element movement.
 - Pending plan confirm, cancel, and refine behavior.
+- LLM result returning after state version changes is not auto-applied.
+- Barge-in cancel aborts the active planning request.
 
 E2E tests:
 
@@ -534,7 +615,7 @@ Visual canvas checks can be manual or loose smoke checks only.
 - AgentPlan validation failure must never execute changes.
 - TTS must be interruptible by barge-in.
 
-## 16. DESIGN.md Deliverable Requirements
+## 17. DESIGN.md Deliverable Requirements
 
 The final `docs/DESIGN.md` must include:
 
@@ -555,28 +636,30 @@ The final `docs/DESIGN.md` must include:
 
 It must not claim work is implemented before the code exists and is verified.
 
-## 17. Implementation Order
+## 18. Implementation Order
 
 Recommended implementation order:
 
 1. Define `ProjectState`, elements, and command system.
-2. Implement `FabricRenderer` without native Fabric groups.
-3. Implement `ConnectionUpdater`.
-4. Implement `LayoutEngine` with grid, flow, mindmap-lite, and incremental strategies.
-5. Implement local template Agent and AgentPlan validation.
-6. Implement voice state machine, TTS, barge-in, earcons, and text debug fallback.
-7. Implement PendingPlan confirmation flow.
-8. Implement CanvasDescriber and EntityResolver.
-9. Implement local Node/Express API proxy and LLM provider.
-10. Add domestic Serverless deployment adapter documentation.
-11. Add export, auto-save, and restore.
-12. Update `docs/DESIGN.md` with planned, implemented, and unfinished sections.
-13. Run unit tests, build, and manual voice acceptance checks.
+2. Implement `CommandManager` with macro commands and immutable state snapshots.
+3. Implement `InteractionController` with abort, queue, and stale-plan reconciliation.
+4. Implement `FabricRenderer` without native Fabric groups.
+5. Implement `ConnectionUpdater`.
+6. Implement `LayoutEngine` adapters for dagre flow, d3-hierarchy mind maps, grid fallback, and incremental placement.
+7. Implement local template Agent and AgentPlan validation.
+8. Implement voice state machine, TTS, barge-in, earcons, and text debug fallback.
+9. Implement PendingPlan confirmation flow.
+10. Implement CanvasDescriber and EntityResolver with scoring heuristics.
+11. Implement local Node/Express API proxy and LLM provider.
+12. Add domestic Serverless deployment adapter documentation.
+13. Add export, auto-save, and restore.
+14. Update `docs/DESIGN.md` with planned, implemented, and unfinished sections.
+15. Run unit tests, build, and manual voice acceptance checks.
 
-## 18. Implementation Defaults
+## 19. Implementation Defaults
 
 - Document Alibaba Cloud Function Compute first because the product prioritizes mainland China access and domestic deployment.
 - Implement DeepSeek as the first production LLM adapter because the existing product design already selects it as the default domestic model.
 - Use Fabric.js in the MVP renderer, but keep `ProjectState` independent from Fabric internals.
-- Implement lightweight in-house layout strategies first. Add dagre or d3-hierarchy only after the basic layout contract is stable.
+- Use dagre and d3-hierarchy from the start through thin adapters. Do not implement full custom flowchart or mind map layout algorithms in-house.
 - Start with unit and integration tests. Add Playwright only for DOM, status, command, and `window.getProjectState()` checks; avoid canvas pixel assertions.
