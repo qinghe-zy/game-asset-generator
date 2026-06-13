@@ -17,6 +17,7 @@ This branch contains the runnable frontend foundation. The implementation is int
 ## Dependencies
 
 - React and React DOM: render the frontend application.
+- @dagrejs/dagre: compute automatic directed graph layouts for flowcharts and architecture diagrams.
 - Vite: local development server and production build.
 - ESLint and TypeScript ESLint: lint TypeScript and React source.
 - Vitest and jsdom: run browser-like unit tests for state, command, and interaction modules.
