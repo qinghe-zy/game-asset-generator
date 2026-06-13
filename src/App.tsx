@@ -55,6 +55,14 @@ function App() {
           >
             撤销
           </button>
+          <button
+            type="button"
+            className="secondaryAction"
+            disabled={!controller.canRedo}
+            onClick={controller.redo}
+          >
+            重做
+          </button>
         </form>
       </footer>
     </main>
