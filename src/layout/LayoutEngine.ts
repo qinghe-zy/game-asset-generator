@@ -3,6 +3,8 @@ export interface LayoutNode {
   label?: string
   width: number
   height: number
+  x?: number
+  y?: number
   parentId?: string
   manualLocked?: boolean
 }
