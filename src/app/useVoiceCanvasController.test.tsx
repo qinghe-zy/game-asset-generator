@@ -137,4 +137,130 @@ describe('useVoiceCanvasController', () => {
     expect(getController().projectState.elementOrder).toEqual(initialElementOrder)
     expect(getController().canUndo).toBe(false)
   })
+
+  it('routes text undo through the local command router', () => {
+    const getController = renderController()
+    const initialElementOrder = getController().projectState.elementOrder
+
+    act(() => {
+      getController().setTextPrompt('画一个用户注册登录流程图')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+    act(() => {
+      getController().executePendingPlan()
+    })
+    act(() => {
+      getController().setTextPrompt('撤销')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+
+    expect(getController().projectState.elementOrder).toEqual(initialElementOrder)
+    expect(getController().statusMessage).toBe('已撤销上一步')
+  })
+
+  it('reports empty undo history without changing the canvas', () => {
+    const getController = renderController()
+    const initialElementOrder = getController().projectState.elementOrder
+
+    act(() => {
+      getController().setTextPrompt('撤销')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+
+    expect(getController().projectState.elementOrder).toEqual(initialElementOrder)
+    expect(getController().statusMessage).toBe('当前没有可撤销的操作')
+  })
+
+  it('routes text redo through the local command router', () => {
+    const getController = renderController()
+
+    act(() => {
+      getController().setTextPrompt('画一个用户注册登录流程图')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+    act(() => {
+      getController().executePendingPlan()
+    })
+    act(() => {
+      getController().setTextPrompt('撤销')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+    act(() => {
+      getController().setTextPrompt('重做')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+
+    expect(getController().projectState.elements['flow-entry']).toMatchObject({
+      kind: 'shape',
+      label: '打开入口',
+    })
+    expect(getController().statusMessage).toBe('已重做上一步')
+  })
+
+  it('reports empty redo history without changing the canvas', () => {
+    const getController = renderController()
+    const initialElementOrder = getController().projectState.elementOrder
+
+    act(() => {
+      getController().setTextPrompt('重做')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+
+    expect(getController().projectState.elementOrder).toEqual(initialElementOrder)
+    expect(getController().statusMessage).toBe('当前没有可重做的操作')
+  })
+
+  it('routes a text color command to a resolved canvas element', () => {
+    const getController = renderController()
+
+    act(() => {
+      getController().setTextPrompt('画一个用户注册登录流程图')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+    act(() => {
+      getController().executePendingPlan()
+    })
+    act(() => {
+      getController().setTextPrompt('把打开入口改成红色')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+
+    expect(getController().projectState.elements['flow-entry'].style?.fill).toBe(
+      '#ef4444',
+    )
+    expect(getController().statusMessage).toBe('已更新元素颜色')
+  })
+
+  it('reports export as a later module without changing state', () => {
+    const getController = renderController()
+    const initialElementOrder = getController().projectState.elementOrder
+
+    act(() => {
+      getController().setTextPrompt('导出 PNG')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+
+    expect(getController().projectState.elementOrder).toEqual(initialElementOrder)
+    expect(getController().statusMessage).toBe('导出功能会在后续导出模块接入')
+  })
 })
