@@ -1,4 +1,5 @@
-import { Circle, Polygon, Rect, Textbox } from 'fabric'
+import { Circle, Line, Polygon, Rect, Textbox } from 'fabric'
+import { calculateConnectorRenderModels } from './ConnectionUpdater'
 import type {
   CanvasElement,
   GroupElement,
@@ -20,6 +21,10 @@ export interface RenderableFabricCanvas<TObject> {
 }
 
 export interface FabricObjectFactory<TObject> {
+  line(
+    points: [number, number, number, number],
+    props: Record<string, unknown>,
+  ): TObject
   rect(props: Record<string, unknown>): TObject
   circle(props: Record<string, unknown>): TObject
   polygon(
@@ -34,6 +39,7 @@ export type FabricTaggedObject = object & {
 }
 
 const defaultFactory: FabricObjectFactory<FabricTaggedObject> = {
+  line: (points, props) => new Line(points, props) as FabricTaggedObject,
   rect: (props) => new Rect(props) as FabricTaggedObject,
   circle: (props) => new Circle(props) as FabricTaggedObject,
   polygon: (points, props) => new Polygon(points, props) as FabricTaggedObject,
@@ -53,10 +59,13 @@ export function renderProjectStateToFabric<TObject extends FabricTaggedObject>(
     canvas.remove(...previousObjects)
   }
 
-  const nextObjects = state.elementOrder
-    .map((elementId) => state.elements[elementId])
-    .filter((element): element is CanvasElement => Boolean(element))
-    .flatMap((element) => createObjectsForElement(element, factory))
+  const nextObjects = [
+    ...state.elementOrder
+      .map((elementId) => state.elements[elementId])
+      .filter((element): element is CanvasElement => Boolean(element))
+      .flatMap((element) => createObjectsForElement(element, factory)),
+    ...createConnectorObjects(state, factory),
+  ]
 
   if (nextObjects.length > 0) {
     canvas.add(...nextObjects)
@@ -82,6 +91,44 @@ function createObjectsForElement<TObject extends FabricTaggedObject>(
   }
 
   return []
+}
+
+function createConnectorObjects<TObject extends FabricTaggedObject>(
+  state: ProjectState,
+  factory: FabricObjectFactory<TObject>,
+): TObject[] {
+  return calculateConnectorRenderModels(state).flatMap((connector) => {
+    const line = factory.line(
+      [connector.from.x, connector.from.y, connector.to.x, connector.to.y],
+      {
+        elementId: connector.id,
+        renderRole: 'connector-line',
+        stroke: connector.style.stroke ?? '#64748b',
+        strokeWidth: connector.style.strokeWidth ?? 2,
+        fill: '',
+        objectCaching: false,
+      },
+    )
+
+    if (!connector.label) {
+      return [line]
+    }
+
+    return [
+      line,
+      factory.textbox(connector.label, {
+        elementId: connector.id,
+        renderRole: 'connector-label',
+        left: connector.labelPosition.x,
+        top: connector.labelPosition.y,
+        width: 160,
+        fill: connector.style.textColor ?? '#334155',
+        fontSize: connector.style.fontSize ?? 12,
+        fontWeight: connector.style.fontWeight ?? 'normal',
+        objectCaching: false,
+      }),
+    ]
+  })
 }
 
 function createGroupObjects<TObject extends FabricTaggedObject>(

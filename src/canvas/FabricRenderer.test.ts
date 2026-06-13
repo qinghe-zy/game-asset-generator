@@ -18,6 +18,7 @@ interface FakeObject {
   renderRole?: string
   type?: string
   text?: string
+  linePoints?: [number, number, number, number]
   points?: Array<{ x: number; y: number }>
   props: Record<string, unknown>
 }
@@ -65,11 +66,23 @@ const text = (id: string): TextElement => ({
   meta,
 })
 
-const connector = (): ConnectorElement => ({
-  id: 'edge',
+const labeledConnector = (
+  id: string,
+  fromId: string,
+  toId: string,
+  label: string,
+): ConnectorElement => ({
+  id,
   kind: 'connector',
-  fromId: 'a',
-  toId: 'b',
+  fromId,
+  toId,
+  label,
+  style: {
+    stroke: '#64748b',
+    strokeWidth: 2,
+    textColor: '#334155',
+    fontSize: 12,
+  },
   meta,
 })
 
@@ -93,6 +106,13 @@ const group = (id = 'group'): GroupElement => ({
 
 const createFakeFactory = () => {
   const factory: FabricObjectFactory<FakeObject> = {
+    line: (linePoints, props) => ({
+      elementId: String(props.elementId),
+      renderRole: String(props.renderRole),
+      type: 'line',
+      linePoints,
+      props,
+    }),
     rect: (props) => ({
       elementId: String(props.elementId),
       renderRole: String(props.renderRole),
@@ -232,25 +252,6 @@ describe('FabricRenderer', () => {
     expect(canvas.added[1].text).toBe('Frontend group')
   })
 
-  it('renders groups but still skips connector elements for later renderer PRs', () => {
-    const state = [group(), shape('rect', 'rect'), connector()].reduce(
-      (current, element) => addElement(current, element),
-      createProjectState('demo'),
-    )
-    const canvas = createFakeCanvas()
-
-    renderProjectStateToFabric(canvas, state, createFakeFactory())
-
-    expect(canvas.added.map((item) => item.props.elementId)).toEqual([
-      'group',
-      'group',
-      'rect',
-    ])
-    expect(canvas.added.some((item) => item.props.elementId === 'edge')).toBe(
-      false,
-    )
-  })
-
   it('uses global coordinates and style defaults', () => {
     const state = addElement(
       createProjectState('demo'),
@@ -282,5 +283,40 @@ describe('FabricRenderer', () => {
     renderProjectStateToFabric(canvas, state)
 
     expect(canvas.added[0].elementId).toBe('rect')
+  })
+
+  it('renders connectors as line objects with optional labels', () => {
+    const state = [
+      shape('a', 'rounded-rect', 100, 100),
+      shape('b', 'rounded-rect', 280, 100),
+      labeledConnector('edge', 'a', 'b', 'opens'),
+    ].reduce(
+      (current, element) => addElement(current, element),
+      createProjectState('demo'),
+    )
+    const canvas = createFakeCanvas()
+
+    renderProjectStateToFabric(canvas, state, createFakeFactory())
+
+    expect(canvas.added.map((item) => item.type)).toEqual([
+      'rect',
+      'rect',
+      'line',
+      'textbox',
+    ])
+    expect(canvas.added[2].linePoints).toEqual([260, 140, 280, 140])
+    expect(canvas.added[2].props).toMatchObject({
+      elementId: 'edge',
+      renderRole: 'connector-line',
+      stroke: '#64748b',
+      strokeWidth: 2,
+    })
+    expect(canvas.added[3].text).toBe('opens')
+    expect(canvas.added[3].props).toMatchObject({
+      elementId: 'edge',
+      renderRole: 'connector-label',
+      left: 270,
+      top: 140,
+    })
   })
 })
