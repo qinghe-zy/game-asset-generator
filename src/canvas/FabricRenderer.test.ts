@@ -15,6 +15,7 @@ import type {
 
 interface FakeObject {
   elementId?: string
+  renderRole?: string
   type?: string
   text?: string
   points?: Array<{ x: number; y: number }>
@@ -72,14 +73,21 @@ const connector = (): ConnectorElement => ({
   meta,
 })
 
-const group = (): GroupElement => ({
-  id: 'group',
+const group = (id = 'group'): GroupElement => ({
+  id,
   kind: 'group',
-  label: 'Group',
-  x: 80,
-  y: 90,
-  width: 300,
-  height: 200,
+  label: 'Frontend group',
+  x: 70,
+  y: 72,
+  width: 310,
+  height: 170,
+  style: {
+    fill: '#f8fafc',
+    stroke: '#cbd5e1',
+    strokeWidth: 1,
+    textColor: '#475569',
+    fontSize: 13,
+  },
   meta,
 })
 
@@ -87,22 +95,26 @@ const createFakeFactory = () => {
   const factory: FabricObjectFactory<FakeObject> = {
     rect: (props) => ({
       elementId: String(props.elementId),
+      renderRole: String(props.renderRole),
       type: 'rect',
       props,
     }),
     circle: (props) => ({
       elementId: String(props.elementId),
+      renderRole: String(props.renderRole),
       type: 'circle',
       props,
     }),
     polygon: (points, props) => ({
       elementId: String(props.elementId),
+      renderRole: String(props.renderRole),
       type: 'polygon',
       points,
       props,
     }),
     textbox: (textValue, props) => ({
       elementId: String(props.elementId),
+      renderRole: String(props.renderRole),
       type: 'textbox',
       text: textValue,
       props,
@@ -172,8 +184,12 @@ describe('FabricRenderer', () => {
     ])
   })
 
-  it('skips connector and group elements for later renderer PRs', () => {
-    const state = [shape('rect', 'rect'), connector(), group()].reduce(
+  it('renders logical groups as background rectangles and separate titles before children', () => {
+    const groupedShape = {
+      ...shape('child', 'rounded-rect', 120, 120),
+      parentId: 'group',
+    }
+    const state = [group(), groupedShape, text('label')].reduce(
       (current, element) => addElement(current, element),
       createProjectState('demo'),
     )
@@ -181,8 +197,58 @@ describe('FabricRenderer', () => {
 
     renderProjectStateToFabric(canvas, state, createFakeFactory())
 
-    expect(canvas.added).toHaveLength(1)
-    expect(canvas.added[0].props.elementId).toBe('rect')
+    expect(canvas.added.map((item) => item.type)).toEqual([
+      'rect',
+      'textbox',
+      'rect',
+      'textbox',
+    ])
+    expect(canvas.added.map((item) => item.props.renderRole)).toEqual([
+      'group-background',
+      'group-title',
+      undefined,
+      undefined,
+    ])
+    expect(canvas.added[0].props).toMatchObject({
+      elementId: 'group',
+      renderRole: 'group-background',
+      left: 70,
+      top: 72,
+      width: 310,
+      height: 170,
+      fill: '#f8fafc',
+      stroke: '#cbd5e1',
+      strokeWidth: 1,
+    })
+    expect(canvas.added[1].props).toMatchObject({
+      elementId: 'group',
+      renderRole: 'group-title',
+      left: 82,
+      top: 82,
+      width: 286,
+      fill: '#475569',
+      fontSize: 13,
+    })
+    expect(canvas.added[1].text).toBe('Frontend group')
+  })
+
+  it('renders groups but still skips connector elements for later renderer PRs', () => {
+    const state = [group(), shape('rect', 'rect'), connector()].reduce(
+      (current, element) => addElement(current, element),
+      createProjectState('demo'),
+    )
+    const canvas = createFakeCanvas()
+
+    renderProjectStateToFabric(canvas, state, createFakeFactory())
+
+    expect(canvas.added.map((item) => item.props.elementId)).toEqual([
+      'group',
+      'group',
+      'rect',
+    ])
+    expect(canvas.added.some((item) => item.props.elementId === 'edge')).toBe(
+      false,
+    )
   })
 
   it('uses global coordinates and style defaults', () => {

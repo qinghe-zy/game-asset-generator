@@ -1,6 +1,16 @@
 import { Circle, Polygon, Rect, Textbox } from 'fabric'
-import type { CanvasElement, ShapeElement, TextElement } from '../state/elements'
+import type {
+  CanvasElement,
+  GroupElement,
+  ShapeElement,
+  TextElement,
+} from '../state/elements'
 import type { ProjectState } from '../state/projectState'
+
+const GROUP_TITLE_OFFSET_X = 12
+const GROUP_TITLE_OFFSET_Y = 10
+const GROUP_TITLE_RESERVED_HEIGHT = 24
+const GROUP_CORNER_RADIUS = 10
 
 export interface RenderableFabricCanvas<TObject> {
   getObjects(): TObject[]
@@ -67,7 +77,46 @@ function createObjectsForElement<TObject extends FabricTaggedObject>(
     return [createTextObject(element, factory)]
   }
 
+  if (element.kind === 'group') {
+    return createGroupObjects(element, factory)
+  }
+
   return []
+}
+
+function createGroupObjects<TObject extends FabricTaggedObject>(
+  element: GroupElement,
+  factory: FabricObjectFactory<TObject>,
+): TObject[] {
+  const background = factory.rect({
+    elementId: element.id,
+    renderRole: 'group-background',
+    left: element.x,
+    top: element.y,
+    width: element.width,
+    height: element.height,
+    fill: element.style?.fill ?? '#f8fafc',
+    stroke: element.style?.stroke ?? '#d4d4d4',
+    strokeWidth: element.style?.strokeWidth ?? 1,
+    rx: GROUP_CORNER_RADIUS,
+    ry: GROUP_CORNER_RADIUS,
+    objectCaching: false,
+  })
+
+  const title = factory.textbox(element.label ?? element.id, {
+    elementId: element.id,
+    renderRole: 'group-title',
+    left: element.x + GROUP_TITLE_OFFSET_X,
+    top: element.y + GROUP_TITLE_OFFSET_Y,
+    width: Math.max(1, element.width - GROUP_TITLE_OFFSET_X * 2),
+    height: GROUP_TITLE_RESERVED_HEIGHT,
+    fill: element.style?.textColor ?? '#525252',
+    fontSize: element.style?.fontSize ?? 13,
+    fontWeight: element.style?.fontWeight ?? 'bold',
+    objectCaching: false,
+  })
+
+  return [background, title]
 }
 
 function createShapeObject<TObject extends FabricTaggedObject>(
