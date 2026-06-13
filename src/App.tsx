@@ -1,4 +1,5 @@
 import './App.css'
+import { CanvasStage } from './components/CanvasStage/CanvasStage'
 
 function App() {
   return (
@@ -12,12 +13,7 @@ function App() {
       </header>
 
       <section className="workspace" aria-label="Voice Canvas workspace">
-        <div className="emptyCanvas">
-          <p className="emptyCanvasTitle">结构化画布</p>
-          <p className="emptyCanvasText">
-            后续 PR 会接入 ProjectState、命令系统、Fabric 渲染和语音 Agent。
-          </p>
-        </div>
+        <CanvasStage />
       </section>
 
       <footer className="voiceBar">

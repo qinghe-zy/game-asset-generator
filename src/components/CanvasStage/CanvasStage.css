@@ -1,0 +1,22 @@
+.canvasStage {
+  min-height: 480px;
+  overflow: auto;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  background:
+    linear-gradient(#f0f0f0 1px, transparent 1px),
+    linear-gradient(90deg, #f0f0f0 1px, transparent 1px),
+    #f7f7f7;
+  background-size: 32px 32px;
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 4%),
+    0 8px 24px rgb(0 0 0 / 6%);
+}
+
+.canvasStageSurface {
+  display: block;
+  width: min(1280px, 100%);
+  min-width: 720px;
+  height: auto;
+  background: #ffffff;
+}
