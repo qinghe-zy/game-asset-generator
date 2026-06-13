@@ -2,6 +2,7 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it } from 'vitest'
 import { CanvasStage } from './CanvasStage'
+import { createDemoProjectState } from '../../app/demoProjectState'
 import type { ProjectState } from '../../state/projectState'
 
 declare global {
@@ -11,18 +12,27 @@ declare global {
 }
 
 let container: HTMLDivElement | undefined
+let root: ReturnType<typeof createRoot> | undefined
 
 afterEach(() => {
+  if (root) {
+    act(() => {
+      root?.unmount()
+    })
+  }
+
   container?.remove()
   container = undefined
+  root = undefined
 })
 
 const renderCanvasStage = () => {
   container = document.createElement('div')
   document.body.append(container)
+  root = createRoot(container)
 
   act(() => {
-    createRoot(container!).render(<CanvasStage />)
+    root?.render(<CanvasStage projectState={createDemoProjectState()} />)
   })
 }
 

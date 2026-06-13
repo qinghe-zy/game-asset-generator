@@ -67,12 +67,47 @@
   font-size: 14px;
 }
 
-.voiceBar button {
-  border: 0;
+.textCommandForm {
+  display: grid;
+  grid-template-columns: minmax(260px, 420px) auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.textCommandForm input {
+  min-width: 0;
+  height: 40px;
+  border: 1px solid #ebebeb;
+  border-radius: 6px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: #171717;
+  font-size: 14px;
+}
+
+.textCommandForm button {
+  height: 40px;
+  border: 1px solid #171717;
   border-radius: 999px;
-  padding: 10px 16px;
-  background: #ebebeb;
+  padding: 0 14px;
+  background: #171717;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.textCommandForm .secondaryAction {
+  border-color: #ebebeb;
+  background: #ffffff;
+  color: #171717;
+}
+
+.textCommandForm button:disabled {
+  border-color: #ebebeb;
+  background: #f5f5f5;
   color: #888888;
+  cursor: not-allowed;
 }
 
 @media (max-width: 760px) {
@@ -84,5 +119,10 @@
 
   .workspace {
     padding: 16px;
+  }
+
+  .textCommandForm {
+    width: 100%;
+    grid-template-columns: 1fr;
   }
 }
