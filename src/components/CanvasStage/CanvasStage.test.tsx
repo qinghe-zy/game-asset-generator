@@ -2,6 +2,13 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it } from 'vitest'
 import { CanvasStage } from './CanvasStage'
+import type { ProjectState } from '../../state/projectState'
+
+declare global {
+  interface Window {
+    getProjectState?: () => ProjectState
+  }
+}
 
 let container: HTMLDivElement | undefined
 
@@ -29,5 +36,9 @@ describe('CanvasStage', () => {
     expect(document.querySelector('[data-testid="fabric-canvas"]')).toBeInstanceOf(
       HTMLCanvasElement,
     )
+    const debugState = window.getProjectState?.()
+
+    expect(debugState?.elements['voice-to-plan']?.kind).toBe('connector')
+    expect(debugState?.elementOrder).toContain('voice-to-plan')
   })
 })

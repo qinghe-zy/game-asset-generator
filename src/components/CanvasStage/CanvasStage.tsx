@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Canvas } from 'fabric'
 import { renderProjectStateToFabric } from '../../canvas/FabricRenderer'
+import { registerProjectStateDebug } from '../../debug/projectStateDebug'
 import { addElement, createProjectState } from '../../state/projectState'
 import type { CanvasElement } from '../../state/elements'
 import './CanvasStage.css'
@@ -103,6 +104,8 @@ function createDemoProjectState() {
   )
 }
 
+const demoProjectState = createDemoProjectState()
+
 export function CanvasStage() {
   const canvasElementRef = useRef<HTMLCanvasElement | null>(null)
 
@@ -123,9 +126,13 @@ export function CanvasStage() {
       width: CANVAS_WIDTH,
       height: CANVAS_HEIGHT,
     })
-    renderProjectStateToFabric(fabricCanvas, createDemoProjectState())
+    const cleanupProjectStateDebug = registerProjectStateDebug(
+      () => demoProjectState,
+    )
+    renderProjectStateToFabric(fabricCanvas, demoProjectState)
 
     return () => {
+      cleanupProjectStateDebug()
       void fabricCanvas.dispose()
     }
   }, [])
