@@ -8,6 +8,7 @@ Voice Canvas is an AI voice drawing tool. The MVP focuses on a voice-first struc
 - `npm run build`: type-check and build the frontend.
 - `npm run lint`: run ESLint.
 - `npm run preview`: preview the production build.
+- `npm run test`: run unit tests.
 
 ## Current Status
 
@@ -18,6 +19,7 @@ This branch contains the runnable frontend foundation. The implementation is int
 - React and React DOM: render the frontend application.
 - Vite: local development server and production build.
 - ESLint and TypeScript ESLint: lint TypeScript and React source.
+- Vitest and jsdom: run browser-like unit tests for state, command, and interaction modules.
 
 ## PR Requirements
 
