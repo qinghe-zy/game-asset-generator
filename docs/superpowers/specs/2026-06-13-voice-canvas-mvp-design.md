@@ -636,7 +636,39 @@ The final `docs/DESIGN.md` must include:
 
 It must not claim work is implemented before the code exists and is verified.
 
-## 18. Implementation Order
+## 18. PR and Review Workflow
+
+Development must be organized as small pull requests.
+
+Rules:
+
+- Each PR implements or modifies one feature only.
+- Large features must be split into several independently reviewable PRs.
+- Every merged PR must leave `main` runnable so reviewers can reproduce the demo at any time.
+- Third-party libraries and frameworks introduced by a PR must be listed in README, with a short explanation of what the project uses them for.
+- Reused code from previous personal work must be disclosed in the PR description with its source.
+
+PR description template:
+
+```markdown
+## 功能描述
+
+说明这个 PR 新增或修改了什么，以及用户如何使用它。
+
+## 实现思路
+
+说明关键技术选择、核心模块和主要数据流。
+
+## 测试方式
+
+列出验证命令、手工测试步骤，以及当前已知限制。
+```
+
+PR titles should be one clear sentence describing the change, such as "Add ProjectState and macro undo support".
+
+Avoid empty PR descriptions, descriptions unrelated to the actual diff, and unexplained dependency additions. Use direct human wording; keep explanations practical and easy for reviewers to follow.
+
+## 19. Implementation Order
 
 Recommended implementation order:
 
@@ -656,7 +688,7 @@ Recommended implementation order:
 14. Update `docs/DESIGN.md` with planned, implemented, and unfinished sections.
 15. Run unit tests, build, and manual voice acceptance checks.
 
-## 19. Implementation Defaults
+## 20. Implementation Defaults
 
 - Document Alibaba Cloud Function Compute first because the product prioritizes mainland China access and domestic deployment.
 - Implement DeepSeek as the first production LLM adapter because the existing product design already selects it as the default domestic model.
