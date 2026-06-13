@@ -64,6 +64,37 @@ function createDemoProjectState() {
       },
       meta: demoMeta,
     },
+    {
+      id: 'agent-plan',
+      kind: 'shape',
+      shape: 'rounded-rect',
+      label: 'Agent plan',
+      parentId: 'demo-group',
+      x: 392,
+      y: 88,
+      width: 220,
+      height: 116,
+      style: {
+        fill: '#f7f7f7',
+        stroke: '#171717',
+        strokeWidth: 2,
+      },
+      meta: demoMeta,
+    },
+    {
+      id: 'voice-to-plan',
+      kind: 'connector',
+      fromId: 'voice-brief',
+      toId: 'agent-plan',
+      label: 'plans',
+      style: {
+        stroke: '#64748b',
+        strokeWidth: 2,
+        textColor: '#334155',
+        fontSize: 12,
+      },
+      meta: demoMeta,
+    },
   ]
 
   return elements.reduce(
