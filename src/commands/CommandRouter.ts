@@ -10,6 +10,8 @@ export type LocalCommandResult =
 
 export interface LocalCommandContext {
   state: ProjectState
+  canUndo?: boolean
+  canRedo?: boolean
   undo(): ProjectState
   redo(): ProjectState
   execute(command: Command): ProjectState
@@ -46,6 +48,14 @@ export function routeLocalCommand(
   }
 
   if (isUndoCommand(commandText)) {
+    if (context.canUndo === false) {
+      return {
+        status: 'unsupported',
+        message: '当前没有可撤销的操作',
+        reason: 'undo-history-empty',
+      }
+    }
+
     return {
       status: 'handled',
       message: '已撤销上一步',
@@ -54,6 +64,14 @@ export function routeLocalCommand(
   }
 
   if (isRedoCommand(commandText)) {
+    if (context.canRedo === false) {
+      return {
+        status: 'unsupported',
+        message: '当前没有可重做的操作',
+        reason: 'redo-history-empty',
+      }
+    }
+
     return {
       status: 'handled',
       message: '已重做上一步',

@@ -92,6 +92,23 @@ describe('CommandRouter', () => {
     expect(handled.state.elements.login?.label).toBe('登录')
   })
 
+  it('does not report undo as handled when no undo history exists', () => {
+    const undo = vi.fn(() => createProjectState('画布'))
+
+    const result = routeLocalCommand('撤销', {
+      state: createProjectState('画布'),
+      canUndo: false,
+      undo,
+      redo: vi.fn(),
+      execute: vi.fn(),
+    })
+
+    const unsupported = expectUnsupported(result)
+
+    expect(unsupported.message).toBe('当前没有可撤销的操作')
+    expect(undo).not.toHaveBeenCalled()
+  })
+
   it('routes redo to the supplied callback', () => {
     const redo = vi.fn(() => withNodes(node('login', '登录')))
 
@@ -106,6 +123,23 @@ describe('CommandRouter', () => {
 
     expect(redo).toHaveBeenCalledTimes(1)
     expect(handled.state.elements.login?.label).toBe('登录')
+  })
+
+  it('does not report redo as handled when no redo history exists', () => {
+    const redo = vi.fn(() => createProjectState('画布'))
+
+    const result = routeLocalCommand('重做', {
+      state: createProjectState('画布'),
+      canRedo: false,
+      undo: vi.fn(),
+      redo,
+      execute: vi.fn(),
+    })
+
+    const unsupported = expectUnsupported(result)
+
+    expect(unsupported.message).toBe('当前没有可重做的操作')
+    expect(redo).not.toHaveBeenCalled()
   })
 
   it('clears the canvas as one command', () => {

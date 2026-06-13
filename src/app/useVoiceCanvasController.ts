@@ -42,6 +42,8 @@ export function useVoiceCanvasController(): VoiceCanvasController {
 
     const localResult = routeLocalCommand(prompt, {
       state: projectState,
+      canUndo: commandManager.getUndoCount() > 0,
+      canRedo: commandManager.getRedoCount() > 0,
       undo: () => commandManager.undo(),
       redo: () => commandManager.redo(),
       execute: (command) => commandManager.execute(command),

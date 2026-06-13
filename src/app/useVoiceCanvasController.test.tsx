@@ -162,6 +162,21 @@ describe('useVoiceCanvasController', () => {
     expect(getController().statusMessage).toBe('已撤销上一步')
   })
 
+  it('reports empty undo history without changing the canvas', () => {
+    const getController = renderController()
+    const initialElementOrder = getController().projectState.elementOrder
+
+    act(() => {
+      getController().setTextPrompt('撤销')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+
+    expect(getController().projectState.elementOrder).toEqual(initialElementOrder)
+    expect(getController().statusMessage).toBe('当前没有可撤销的操作')
+  })
+
   it('routes text redo through the local command router', () => {
     const getController = renderController()
 
@@ -192,6 +207,21 @@ describe('useVoiceCanvasController', () => {
       label: '打开入口',
     })
     expect(getController().statusMessage).toBe('已重做上一步')
+  })
+
+  it('reports empty redo history without changing the canvas', () => {
+    const getController = renderController()
+    const initialElementOrder = getController().projectState.elementOrder
+
+    act(() => {
+      getController().setTextPrompt('重做')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+
+    expect(getController().projectState.elementOrder).toEqual(initialElementOrder)
+    expect(getController().statusMessage).toBe('当前没有可重做的操作')
   })
 
   it('routes a text color command to a resolved canvas element', () => {
