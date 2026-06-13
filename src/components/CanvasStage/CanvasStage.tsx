@@ -2,112 +2,19 @@ import { useEffect, useRef } from 'react'
 import { Canvas } from 'fabric'
 import { renderProjectStateToFabric } from '../../canvas/FabricRenderer'
 import { registerProjectStateDebug } from '../../debug/projectStateDebug'
-import { addElement, createProjectState } from '../../state/projectState'
-import type { CanvasElement } from '../../state/elements'
+import type { ProjectState } from '../../state/projectState'
 import './CanvasStage.css'
 
 const CANVAS_WIDTH = 1280
 const CANVAS_HEIGHT = 720
-const demoMeta = {
-  source: 'template' as const,
-  createdAt: 1,
-  updatedAt: 1,
+
+export interface CanvasStageProps {
+  projectState: ProjectState
 }
 
-function createDemoProjectState() {
-  const elements: CanvasElement[] = [
-    {
-      id: 'demo-group',
-      kind: 'group',
-      label: 'Voice planning area',
-      x: 72,
-      y: 64,
-      width: 308,
-      height: 176,
-      style: {
-        fill: '#f8fafc',
-        stroke: '#d9e2e8',
-        strokeWidth: 1,
-        textColor: '#5d6b78',
-        fontSize: 13,
-      },
-      meta: demoMeta,
-    },
-    {
-      id: 'voice-brief',
-      kind: 'shape',
-      shape: 'rounded-rect',
-      label: 'Voice brief',
-      parentId: 'demo-group',
-      x: 96,
-      y: 88,
-      width: 240,
-      height: 116,
-      style: {
-        fill: '#f3fbf7',
-        stroke: '#18735d',
-        strokeWidth: 2,
-      },
-      meta: demoMeta,
-    },
-    {
-      id: 'voice-brief-label',
-      kind: 'text',
-      text: 'Describe a drawing by voice',
-      parentId: 'demo-group',
-      x: 122,
-      y: 125,
-      width: 188,
-      style: {
-        textColor: '#133d34',
-        fontSize: 18,
-        fontWeight: 'bold',
-      },
-      meta: demoMeta,
-    },
-    {
-      id: 'agent-plan',
-      kind: 'shape',
-      shape: 'rounded-rect',
-      label: 'Agent plan',
-      parentId: 'demo-group',
-      x: 392,
-      y: 88,
-      width: 220,
-      height: 116,
-      style: {
-        fill: '#f7f7f7',
-        stroke: '#171717',
-        strokeWidth: 2,
-      },
-      meta: demoMeta,
-    },
-    {
-      id: 'voice-to-plan',
-      kind: 'connector',
-      fromId: 'voice-brief',
-      toId: 'agent-plan',
-      label: 'plans',
-      style: {
-        stroke: '#64748b',
-        strokeWidth: 2,
-        textColor: '#334155',
-        fontSize: 12,
-      },
-      meta: demoMeta,
-    },
-  ]
-
-  return elements.reduce(
-    (state, element) => addElement(state, element),
-    createProjectState('Voice Canvas demo'),
-  )
-}
-
-const demoProjectState = createDemoProjectState()
-
-export function CanvasStage() {
+export function CanvasStage({ projectState }: CanvasStageProps) {
   const canvasElementRef = useRef<HTMLCanvasElement | null>(null)
+  const fabricCanvasRef = useRef<Canvas | null>(null)
 
   useEffect(() => {
     const canvasElement = canvasElementRef.current
@@ -126,16 +33,24 @@ export function CanvasStage() {
       width: CANVAS_WIDTH,
       height: CANVAS_HEIGHT,
     })
-    const cleanupProjectStateDebug = registerProjectStateDebug(
-      () => demoProjectState,
-    )
-    renderProjectStateToFabric(fabricCanvas, demoProjectState)
+    fabricCanvasRef.current = fabricCanvas
 
     return () => {
-      cleanupProjectStateDebug()
+      fabricCanvasRef.current = null
       void fabricCanvas.dispose()
     }
   }, [])
+
+  useEffect(() => {
+    const cleanupProjectStateDebug = registerProjectStateDebug(() => projectState)
+    const fabricCanvas = fabricCanvasRef.current
+
+    if (fabricCanvas) {
+      renderProjectStateToFabric(fabricCanvas, projectState)
+    }
+
+    return cleanupProjectStateDebug
+  }, [projectState])
 
   return (
     <section className="canvasStage" aria-label="Canvas drawing surface">

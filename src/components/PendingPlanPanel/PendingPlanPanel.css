@@ -1,0 +1,75 @@
+.pendingPlanPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+  padding: 14px 16px;
+  background: #ffffff;
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 3%),
+    0 6px 18px rgb(0 0 0 / 5%);
+}
+
+.pendingPlanPanel h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.pendingPlanEyebrow {
+  margin: 0 0 4px;
+  color: #888888;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.pendingPlanMeta {
+  margin: 4px 0 0;
+  color: #4d4d4d;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.pendingPlanActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pendingPlanActions button {
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.pendingPlanPrimary {
+  border: 1px solid #171717;
+  background: #171717;
+  color: #ffffff;
+}
+
+.pendingPlanSecondary {
+  border: 1px solid #ebebeb;
+  background: #ffffff;
+  color: #171717;
+}
+
+@media (max-width: 760px) {
+  .pendingPlanPanel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pendingPlanActions {
+    justify-content: flex-start;
+  }
+}
