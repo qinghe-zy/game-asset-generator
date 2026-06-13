@@ -1,0 +1,120 @@
+.appShell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: #fafafa;
+  color: #171717;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 32px;
+  border-bottom: 1px solid #ebebeb;
+  background: #ffffff;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #4d4d4d;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.topBar h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: -0.96px;
+}
+
+.statusPill {
+  border: 1px solid #ebebeb;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #ffffff;
+  color: #4d4d4d;
+  font-size: 14px;
+}
+
+.workspace {
+  padding: 24px 32px;
+}
+
+.emptyCanvas {
+  min-height: 480px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+  background:
+    linear-gradient(#f5f5f5 1px, transparent 1px),
+    linear-gradient(90deg, #f5f5f5 1px, transparent 1px),
+    #ffffff;
+  background-size: 32px 32px;
+  box-shadow:
+    0 1px 1px rgb(0 0 0 / 3%),
+    0 2px 2px rgb(0 0 0 / 4%);
+}
+
+.emptyCanvasTitle {
+  margin: 0;
+  color: #171717;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.emptyCanvasText {
+  max-width: 520px;
+  margin: 0;
+  color: #4d4d4d;
+  text-align: center;
+}
+
+.voiceBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 32px;
+  border-top: 1px solid #ebebeb;
+  background: #ffffff;
+}
+
+.voiceBar div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.voiceBar span {
+  color: #888888;
+  font-size: 14px;
+}
+
+.voiceBar button {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: #ebebeb;
+  color: #888888;
+}
+
+@media (max-width: 760px) {
+  .topBar,
+  .voiceBar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .workspace {
+    padding: 16px;
+  }
+}
