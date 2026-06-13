@@ -30,6 +30,8 @@ Every coding PR must follow this loop:
 
 `main` must remain runnable after every merge. If a PR breaks the demo path, fix it before moving on.
 
+Do not accumulate completed local branches for later batch push. Each implementation round must end with its own pushed branch and PR.
+
 ## 1. GitHub Sync Contract
 
 Target GitHub repository:
@@ -58,6 +60,15 @@ Each PR branch should be pushed:
 ```bash
 git push -u origin codex/<short-feature-name>
 ```
+
+GitHub synchronization is mandatory for every implementation round. A PR is not considered complete until its branch has been pushed to GitHub and the PR text is ready for review.
+
+Strictly forbidden:
+
+- Importing all source code in one large commit.
+- Combining several roadmap PRs into one branch to save time.
+- Keeping multiple finished PRs local and pushing them later as a batch.
+- Merging or reporting completion before the corresponding branch is pushed.
 
 PR descriptions must use:
 
@@ -96,9 +107,18 @@ This file contains a Vercel-inspired design system:
 
 The app should feel like a developer-grade creative tool. It should not become a toy canvas with oversized decorations. Visual quality is part of MVP acceptance.
 
+For every UI-facing PR, `D:\Project\voice-canvas\DESIGN.md` is a style constraint, not a loose inspiration note. The PR manual acceptance must check:
+
+- Workbench-first layout, not a landing page.
+- Near-white surfaces, ink text, subtle hairline borders, and restrained elevation.
+- Dense but readable tool layout suitable for repeated use.
+- Technical labels can use mono styling; body text stays clean and readable.
+- No oversized decorative cards, generic gradients, or toy-like drawing-tool chrome.
+- Responsive behavior keeps controls readable and avoids overlap.
+
 ## 3. Quality Gates
 
-Each PR has three gates.
+Each PR has four gates. Passing tests is required, but it is not enough by itself.
 
 ### Automated Gate
 
@@ -120,6 +140,8 @@ npm run dev
 
 Then verify the acceptance checklist for that PR. Browser checks should focus on visible behavior, not pixel-perfect screenshots.
 
+For UI-facing PRs, include a design-reference check against `D:\Project\voice-canvas\DESIGN.md`. Record any intentional deviation in the PR description.
+
 ### Review Gate
 
 Before commit:
@@ -137,6 +159,24 @@ Review for:
 - Missing README dependency notes.
 - Missing tests for new logic.
 - Main branch runnability after merge.
+- Branch has been pushed to GitHub for this PR, not held for a later batch push.
+
+### Safety and Reliability Gate
+
+For every PR, check whether the change affects user data, network calls, browser permissions, dependency surface, or generated content. If it does, include the relevant checks in the PR description.
+
+Safety checks may include:
+
+- No API keys, tokens, or secrets committed to source.
+- Frontend code does not expose system-owned model keys.
+- User-provided text is treated as data, not trusted instructions.
+- Imported project JSON is validated before applying.
+- LLM output is validated before execution.
+- Destructive commands require confirmation.
+- Failed network calls fall back cleanly.
+- Browser permission failures show clear recovery UI.
+- New dependencies are documented and are necessary for the PR.
+- Large generated outputs are bounded by operation and element limits.
 
 ## 4. MVP Completion Definition
 
@@ -156,11 +196,12 @@ The MVP is complete only when all of these are true:
 - Export PNG and project JSON work.
 - README explains dependencies, scripts, local run, and deployment shape.
 - `docs/DESIGN.md` records planned, implemented, and unfinished abilities.
+- Security and failure-path checks are documented and pass for the demo path.
 - Final demo can be reproduced from `main`.
 
 ## 5. PR Sequence Overview
 
-The roadmap is split into 10 phases, 40 code/documentation PRs, and 1 local GitHub setup check.
+The roadmap is split into 11 phases, 43 code/documentation PRs, and 1 local GitHub setup check.
 
 Each PR should stay small. A PR can be split further during goal mode if its diff grows beyond a comfortable review size.
 
@@ -1070,6 +1111,7 @@ npm run lint
 **Manual acceptance:**
 
 - UI feels like a production workbench.
+- UI follows `D:\Project\voice-canvas\DESIGN.md`: near-white surfaces, ink hierarchy, hairline separators, restrained depth, and technical polish.
 - No text overlaps at desktop and mobile widths.
 
 **Review gate:**
@@ -1104,6 +1146,7 @@ npm run lint
 - Complex plan opens panel.
 - Execute/cancel work.
 - Text refine updates plan request.
+- Panel styling follows the design reference and feels like an integrated workbench control, not a modal ad card.
 
 **Review gate:**
 
@@ -1135,6 +1178,7 @@ npm run lint
 **Manual acceptance:**
 
 - Settings persist in localStorage where appropriate.
+- Settings panel uses compact form controls and hairline separation consistent with the design reference.
 
 **Review gate:**
 
@@ -1155,6 +1199,7 @@ npm run lint
 - Ensure focus states.
 - Ensure buttons have labels.
 - Avoid hidden instructions that only sighted users can understand.
+- Re-check visual style against `D:\Project\voice-canvas\DESIGN.md` after responsive changes.
 
 **Automated checks:**
 
@@ -1585,6 +1630,117 @@ npm run lint
 
 - This PR only stabilizes; it does not introduce new features.
 
+## Phase K: Security, Dependency, and Failure-Path Hardening
+
+### PR K1: Security Checklist and Secret Handling Audit
+
+**Purpose:** Verify the project does not leak keys and documents the frontend/backend security boundary.
+
+**Files:**
+
+- Create `docs/security/checklist.md`.
+- Modify `README.md` if setup guidance needs clarification.
+- Modify `.env.example` only if variable names or warnings are missing.
+
+**Implementation details:**
+
+- Document where LLM keys may live.
+- Document why frontend bundles cannot safely contain system-owned keys.
+- Check `.gitignore` covers local env files.
+- Check README does not ask users to paste production keys into frontend code.
+- Check Serverless/API Gateway guidance is consistent with implementation.
+
+**Automated checks:**
+
+```bash
+npm run test
+npm run build
+npm run lint
+```
+
+**Manual acceptance:**
+
+- Search the repository for common secret prefixes before opening the PR.
+- Confirm `.env.example` contains placeholders only.
+- Confirm local `.env` files are ignored.
+
+**Review gate:**
+
+- No secret is committed.
+- Security docs use practical wording and match the actual architecture.
+
+### PR K2: Dependency and License Notes
+
+**Purpose:** Make third-party usage explicit for reviewers and avoid unexplained framework/library additions.
+
+**Files:**
+
+- Modify `README.md`.
+- Create `docs/dependencies.md`.
+
+**Implementation details:**
+
+- List React, Vite, Vitest, jsdom, Fabric.js, dagre, d3-hierarchy, Playwright, Express or the selected local proxy dependency.
+- For each dependency, explain what project module uses it.
+- Mark which parts are original implementation: AgentPlan contract, ProjectState, command system, EntityResolver, CanvasDescriber, UI integration.
+- If any copied or reused personal code exists, document its source. If none exists, say the implementation was written for this project.
+
+**Automated checks:**
+
+```bash
+npm run build
+npm run lint
+```
+
+**Manual acceptance:**
+
+- README and dependency docs agree with `package.json`.
+- No dependency appears in `package.json` without an explanation.
+
+**Review gate:**
+
+- Dependency notes are factual and not padded.
+
+### PR K3: Failure-Path Drill
+
+**Purpose:** Prove the MVP behaves well when expected services fail.
+
+**Files:**
+
+- Create `docs/qa/failure-drill.md`.
+- Add tests for failure paths if missing.
+- Fix small failure-path bugs found during the drill.
+
+**Drill scenarios:**
+
+1. STT unsupported or microphone denied.
+2. LLM API key missing.
+3. LLM request timeout.
+4. Invalid AgentPlan returned.
+5. Invalid imported project JSON.
+6. Layout adapter throws and grid fallback is used.
+7. Canvas restore data is corrupted.
+8. Export requested on an empty canvas.
+
+**Automated checks:**
+
+```bash
+npm run test
+npm run test:e2e
+npm run build
+npm run lint
+```
+
+**Manual acceptance:**
+
+- Run each drill scenario and record observed behavior in `docs/qa/failure-drill.md`.
+- The app stays usable or provides clear recovery instructions.
+
+**Review gate:**
+
+- This PR fixes only failure-path bugs found by the drill.
+- No new product feature is introduced here.
+
 ## 6. Long-Running Review Rhythm
 
 After each phase, do a module-level review before starting the next phase:
@@ -1599,6 +1755,7 @@ After each phase, do a module-level review before starting the next phase:
 - Phase H: remote LLM path is safe and documented.
 - Phase I: user work can be saved and exported.
 - Phase J: final demo is reproducible.
+- Phase K: security, dependencies, and failure paths are documented and verified.
 
 If a phase review finds architectural drift, stop and fix before moving forward.
 

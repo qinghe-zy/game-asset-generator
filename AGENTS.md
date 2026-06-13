@@ -76,6 +76,9 @@ During goal-mode implementation:
 - Push each branch to GitHub and open a PR when the PR is ready.
 - Target GitHub repository: `https://github.com/qinghe-zy/game-asset-generator.git`.
 - If the local `origin` remote is missing, add it. If it points somewhere else, stop and ask before changing it.
+- Every implementation round must sync to GitHub as its own pushed branch and PR.
+- Do not keep several completed PRs local and push them later as a batch.
+- Never import all source code in one large commit or combine multiple roadmap PRs into one branch for speed.
 
 Every PR must include:
 - A clear one-sentence title.
@@ -89,7 +92,14 @@ Every PR must pass these gates before merge:
 - Automated checks listed for that PR.
 - Manual acceptance for the changed behavior, not only unit tests.
 - A self-review of `git diff` for scope creep, unrelated churn, missing docs, and missing tests.
+- Branch pushed to GitHub for that specific PR.
 - Main branch remains runnable and demo-ready after merge.
+
+For UI-facing PRs:
+- Treat `D:\Project\voice-canvas\DESIGN.md` as a style constraint.
+- Check the UI against the design reference during manual acceptance.
+- Keep the interface workbench-first, restrained, technical, and polished.
+- Record intentional visual deviations in the PR description.
 
 Avoid:
 - Empty PR descriptions.
