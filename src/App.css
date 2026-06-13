@@ -46,38 +46,6 @@
   padding: 24px 32px;
 }
 
-.emptyCanvas {
-  min-height: 480px;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  gap: 10px;
-  border: 1px solid #ebebeb;
-  border-radius: 8px;
-  background:
-    linear-gradient(#f5f5f5 1px, transparent 1px),
-    linear-gradient(90deg, #f5f5f5 1px, transparent 1px),
-    #ffffff;
-  background-size: 32px 32px;
-  box-shadow:
-    0 1px 1px rgb(0 0 0 / 3%),
-    0 2px 2px rgb(0 0 0 / 4%);
-}
-
-.emptyCanvasTitle {
-  margin: 0;
-  color: #171717;
-  font-size: 22px;
-  font-weight: 600;
-}
-
-.emptyCanvasText {
-  max-width: 520px;
-  margin: 0;
-  color: #4d4d4d;
-  text-align: center;
-}
-
 .voiceBar {
   display: flex;
   align-items: center;

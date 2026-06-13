@@ -17,6 +17,7 @@ This branch contains the runnable frontend foundation. The implementation is int
 ## Dependencies
 
 - React and React DOM: render the frontend application.
+- Fabric.js: power the interactive canvas surface and future ProjectState rendering.
 - @dagrejs/dagre: compute automatic directed graph layouts for flowcharts and architecture diagrams.
 - d3-hierarchy: compute tree layouts for mind maps and parent-child diagrams.
 - @types/d3-hierarchy: provide TypeScript declarations for the mind map layout adapter.
