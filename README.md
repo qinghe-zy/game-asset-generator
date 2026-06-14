@@ -20,6 +20,13 @@ Run `npm run test:e2e` separately from `npm run build`; both commands write to `
 
 ## Demo Flow
 
+Online demo address:
+
+- https://040415.xyz
+- https://www.040415.xyz
+
+If the online page still shows `Server is ready.` or looks blank, the domain is serving the VPS placeholder page rather than the built Voice Canvas frontend. Build the app and copy the contents of `dist/` to `/var/www/040415.xyz/html`, then reload Nginx if its site root was changed.
+
 1. Start the app with `npm run dev`.
 2. Use the text compatibility input if browser STT is unavailable.
 3. Enter `画一个用户注册登录流程图`.
@@ -39,6 +46,46 @@ npm run dev
 Vite proxies `/api/*` to `http://127.0.0.1:3000`. In production, Nginx should serve the static frontend and reverse proxy `/api/*` to the same local Agent API process.
 
 Copy `.env.example` to a local `.env` or configure equivalent process environment variables on the VPS. `DEEPSEEK_API_KEY` is server-side only and must not be added to frontend code.
+
+Minimum local `.env`:
+
+```bash
+AGENT_API_HOST=127.0.0.1
+AGENT_API_PORT=3000
+DEEPSEEK_API_KEY=replace-with-real-server-key
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
+```
+
+The real model key is configured on the server process environment. It is intentionally not written into this README or committed to GitHub.
+
+Fast VPS deployment checklist:
+
+```bash
+npm install
+npm run build
+sudo rsync -a --delete dist/ /var/www/040415.xyz/html/
+
+export AGENT_API_HOST=127.0.0.1
+export AGENT_API_PORT=3000
+export DEEPSEEK_API_KEY=replace-with-real-server-key
+export DEEPSEEK_BASE_URL=https://api.deepseek.com
+export DEEPSEEK_MODEL=deepseek-chat
+npm run api:start
+```
+
+After deployment, check:
+
+```bash
+curl https://040415.xyz
+curl https://040415.xyz/api/health
+```
+
+Expected API health response:
+
+```json
+{"ok":true,"service":"voice-canvas-agent-api","mode":"vps-proxy"}
+```
 
 See [VPS deployment guide](docs/deployment/vps-nginx.md) for the `040415.xyz` production shape. See [Serverless compatibility notes](docs/deployment/serverless-compatibility.md) for the future API Gateway and cloud function migration path.
 
