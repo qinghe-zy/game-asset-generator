@@ -24,7 +24,7 @@ Vite proxies `/api/*` to `http://127.0.0.1:3000`. In production, Nginx should se
 
 Copy `.env.example` to a local `.env` or configure equivalent process environment variables on the VPS. `DEEPSEEK_API_KEY` is server-side only and must not be added to frontend code.
 
-See [VPS deployment guide](docs/deployment/vps-nginx.md) for the `040415.xyz` production shape.
+See [VPS deployment guide](docs/deployment/vps-nginx.md) for the `040415.xyz` production shape. See [Serverless compatibility notes](docs/deployment/serverless-compatibility.md) for the future API Gateway and cloud function migration path.
 
 ## Current Status
 
