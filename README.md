@@ -12,6 +12,9 @@ Voice Canvas is an AI voice drawing tool. The MVP focuses on a voice-first struc
 - `npm run preview`: preview the production build.
 - `npm run test`: run unit tests.
 - `npm run test:e2e`: run the Playwright MVP browser flow. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` when using a locally installed Chromium build.
+- `npm run verify:mvp`: run the MVP acceptance gate in a safe order: unit tests, API tests, lint, build, then E2E.
+
+Run `npm run verify:mvp` for final local acceptance. It runs `npm run build` before `npm run test:e2e` because both commands write to `dist`; running them in parallel can create false E2E failures.
 
 Run `npm run test:e2e` separately from `npm run build`; both commands write to `dist`.
 

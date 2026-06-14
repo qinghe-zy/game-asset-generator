@@ -4,6 +4,7 @@ import { resolveEntity, type EntityResolverContext } from './EntityResolver'
 
 export type LocalCommandResult =
   | { status: 'handled'; message: string; state: ProjectState }
+  | { status: 'export'; format: 'png' | 'json'; message: string }
   | { status: 'clarification'; message: string; candidateIds: string[] }
   | { status: 'unsupported'; message: string; reason: string }
   | { status: 'not-local' }
@@ -97,9 +98,13 @@ export function routeLocalCommand(
 
   if (isExportCommand(commandText)) {
     return {
-      status: 'unsupported',
-      message: '导出功能会在后续导出模块接入',
-      reason: '导出功能尚未接入当前命令路由',
+      status: 'export',
+      format: commandText.includes('项目') || commandText.includes('JSON')
+        ? 'json'
+        : 'png',
+      message: commandText.includes('项目') || commandText.includes('JSON')
+        ? '项目 JSON 导出已准备'
+        : 'PNG 导出已准备',
     }
   }
 
@@ -252,7 +257,7 @@ function isDeleteSelectedCommand(commandText: string): boolean {
 }
 
 function isExportCommand(commandText: string): boolean {
-  return /^导出(画布|png|PNG|图片)?$/.test(commandText)
+  return /^导出(画布|png|PNG|图片|项目|JSON|json)?$/.test(commandText)
 }
 
 function normalize(input: string): string {
