@@ -1,6 +1,9 @@
 import { act, useEffect } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, describe, expect, it } from 'vitest'
+import { PROJECT_STORAGE_KEY } from '../persistence/projectStorage'
+import { createProjectExport } from '../persistence/projectFile'
+import { createProjectState } from '../state/projectState'
 import {
   useVoiceCanvasController,
   type VoiceCanvasController,
@@ -17,6 +20,7 @@ afterEach(() => {
   }
 
   container?.remove()
+  localStorage.clear()
   root = null
   container = null
 })
@@ -97,6 +101,35 @@ describe('useVoiceCanvasController', () => {
       toId: 'flow-account',
     })
     expect(getController().canUndo).toBe(true)
+    expect(localStorage.getItem(PROJECT_STORAGE_KEY)).toContain('flow-entry')
+  })
+
+  it('restores a saved project state on the next mount', () => {
+    let getController = renderController()
+
+    act(() => {
+      getController().setTextPrompt('画一个用户注册登录流程图')
+    })
+    act(() => {
+      getController().requestPlan()
+    })
+    act(() => {
+      getController().executePendingPlan()
+    })
+
+    act(() => {
+      root?.unmount()
+    })
+    root = null
+    container?.remove()
+    container = null
+
+    getController = renderController()
+
+    expect(getController().projectState.elements['flow-entry']).toMatchObject({
+      kind: 'shape',
+      label: '打开入口',
+    })
   })
 
   it('cancels a pending plan without changing the canvas', () => {
@@ -249,7 +282,7 @@ describe('useVoiceCanvasController', () => {
     expect(getController().statusMessage).toBe('已更新元素颜色')
   })
 
-  it('reports export as a later module without changing state', () => {
+  it('reports png export as ready without changing state', () => {
     const getController = renderController()
     const initialElementOrder = getController().projectState.elementOrder
 
@@ -261,6 +294,35 @@ describe('useVoiceCanvasController', () => {
     })
 
     expect(getController().projectState.elementOrder).toEqual(initialElementOrder)
-    expect(getController().statusMessage).toBe('导出功能会在后续导出模块接入')
+    expect(getController().statusMessage).toBe('PNG 导出已准备')
+  })
+
+  it('imports a valid project file and rejects invalid project content', async () => {
+    const getController = renderController()
+    const importedProject = createProjectState('导入项目')
+
+    await act(async () => {
+      getController().importProjectFile(
+        new File(
+          [JSON.stringify(createProjectExport(importedProject))],
+          'import.voicecanvas.json',
+          { type: 'application/json' },
+        ),
+      )
+    })
+
+    expect(getController().projectState.title).toBe('导入项目')
+    expect(localStorage.getItem(PROJECT_STORAGE_KEY)).toContain('导入项目')
+
+    await act(async () => {
+      getController().importProjectFile(
+        new File(['{bad json'], 'bad.voicecanvas.json', {
+          type: 'application/json',
+        }),
+      )
+    })
+
+    expect(getController().projectState.title).toBe('导入项目')
+    expect(getController().statusMessage).toBe('项目文件不是有效 JSON')
   })
 })

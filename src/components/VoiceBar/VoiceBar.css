@@ -30,7 +30,7 @@
 
 .voiceControlForm {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) auto auto auto;
+  grid-template-columns: minmax(260px, 1fr) repeat(6, auto);
   gap: 8px;
   align-items: center;
 }
@@ -57,7 +57,8 @@
   outline-offset: 2px;
 }
 
-.voiceControlForm button {
+.voiceControlForm button,
+.voiceControlFileButton {
   min-height: 44px;
   border: 1px solid #171717;
   border-radius: 999px;
@@ -70,15 +71,31 @@
   white-space: nowrap;
 }
 
-.voiceControlForm button:focus-visible {
+.voiceControlForm button:focus-visible,
+.voiceControlFileButton:focus-within {
   outline: 2px solid #171717;
   outline-offset: 2px;
 }
 
-.voiceControlForm .voiceControlSecondary {
+.voiceControlForm .voiceControlSecondary,
+.voiceControlFileButton {
   border-color: #ebebeb;
   background: #ffffff;
   color: #171717;
+}
+
+.voiceControlFileButton {
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.voiceControlFileButton input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .voiceControlForm button:disabled {

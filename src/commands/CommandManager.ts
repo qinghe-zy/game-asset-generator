@@ -50,6 +50,14 @@ export class CommandManager {
     return this.redoStack.length
   }
 
+  reset(state: ProjectState): ProjectState {
+    this.state = state
+    this.undoStack = []
+    this.redoStack = []
+
+    return this.state
+  }
+
   execute(command: Command): ProjectState {
     const before = this.state
     const after = command.apply(before)

@@ -75,6 +75,16 @@ function expectUnsupported(result: LocalCommandResult) {
   return result
 }
 
+function expectExport(result: LocalCommandResult) {
+  expect(result.status).toBe('export')
+
+  if (result.status !== 'export') {
+    throw new Error(`Expected export result, received ${result.status}`)
+  }
+
+  return result
+}
+
 describe('CommandRouter', () => {
   it('routes undo to the supplied callback', () => {
     const undo = vi.fn(() => withNodes(node('login', '登录')))
@@ -244,19 +254,27 @@ describe('CommandRouter', () => {
     expect(execute).not.toHaveBeenCalled()
   })
 
-  it('returns an unsupported export result for the later export module', () => {
+  it('routes export commands without mutating the canvas', () => {
     const execute = vi.fn()
 
-    const result = routeLocalCommand('导出 PNG', {
+    const pngResult = routeLocalCommand('导出 PNG', {
+      state: createProjectState('画布'),
+      undo: vi.fn(),
+      redo: vi.fn(),
+      execute,
+    })
+    const jsonResult = routeLocalCommand('导出项目', {
       state: createProjectState('画布'),
       undo: vi.fn(),
       redo: vi.fn(),
       execute,
     })
 
-    const unsupported = expectUnsupported(result)
+    const pngExport = expectExport(pngResult)
+    const jsonExport = expectExport(jsonResult)
 
-    expect(unsupported.reason).toContain('导出')
+    expect(pngExport.format).toBe('png')
+    expect(jsonExport.format).toBe('json')
     expect(execute).not.toHaveBeenCalled()
   })
 

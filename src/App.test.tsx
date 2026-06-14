@@ -1,6 +1,6 @@
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 
 let root: Root | null = null
@@ -16,6 +16,7 @@ afterEach(() => {
   container?.remove()
   root = null
   container = null
+  vi.restoreAllMocks()
 })
 
 function renderApp() {
@@ -80,6 +81,54 @@ describe('App pending plan runtime', () => {
     expect(
       screen.querySelector<HTMLButtonElement>('button[aria-label="重做上一步"]'),
     ).not.toBeNull()
+    expect(
+      screen.querySelector<HTMLButtonElement>('button[aria-label="导出 PNG"]'),
+    ).not.toBeNull()
+    expect(
+      screen.querySelector<HTMLButtonElement>('button[aria-label="导出项目 JSON"]'),
+    ).not.toBeNull()
+    expect(
+      screen.querySelector<HTMLInputElement>('input[aria-label="导入项目 JSON"]'),
+    ).not.toBeNull()
+  })
+
+  it('exports project JSON through the toolbar', () => {
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined)
+    const createObjectUrl = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockReturnValue('blob:voice-canvas-project')
+    const revokeObjectUrl = vi
+      .spyOn(URL, 'revokeObjectURL')
+      .mockImplementation(() => undefined)
+    const screen = renderApp()
+    const exportJson = screen.querySelector<HTMLButtonElement>(
+      'button[data-testid="export-project-json"]',
+    )
+
+    expect(exportJson).not.toBeNull()
+    click(exportJson!)
+
+    expect(createObjectUrl).toHaveBeenCalled()
+    expect(clickSpy).toHaveBeenCalled()
+    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:voice-canvas-project')
+  })
+
+  it('exports PNG through the toolbar', () => {
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined)
+    const screen = renderApp()
+    const exportPng = screen.querySelector<HTMLButtonElement>(
+      'button[data-testid="export-png"]',
+    )
+
+    expect(exportPng).not.toBeNull()
+    click(exportPng!)
+
+    expect(clickSpy).toHaveBeenCalled()
+    expect(screen.textContent).toContain('导出：PNG 图片')
   })
 
   it('shows runtime settings without exposing secrets', () => {
