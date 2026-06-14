@@ -86,4 +86,20 @@ describe('CommandManager', () => {
     expect(manager.getRedoCount()).toBe(0)
     expect(manager.getState().elements.register?.label).toBe('register')
   })
+
+  it('resets state and clears undo redo history', () => {
+    const manager = new CommandManager(createProjectState('画布'))
+    const importedState = createProjectState('导入项目')
+
+    manager.execute({
+      id: 'add-login',
+      label: 'Add login',
+      apply: (state) => addElement(state, shape('login')),
+    })
+    manager.reset(importedState)
+
+    expect(manager.getState()).toBe(importedState)
+    expect(manager.getUndoCount()).toBe(0)
+    expect(manager.getRedoCount()).toBe(0)
+  })
 })

@@ -4,6 +4,8 @@ import type { AgentPlan } from '../agent/AgentPlan'
 import { createLocalTemplatePlan } from '../agent/LocalTemplateAgent'
 import { CommandManager } from '../commands/CommandManager'
 import { routeLocalCommand } from '../commands/CommandRouter'
+import { parseProjectImport } from '../persistence/projectFile'
+import { loadStoredProjectState, saveProjectState } from '../persistence/projectStorage'
 import type { ProjectState } from '../state/projectState'
 import { createDemoProjectState } from './demoProjectState'
 
@@ -29,11 +31,13 @@ export interface VoiceCanvasController {
   cancelPendingPlan(): void
   undo(): void
   redo(): void
+  preparePngExport(): void
+  importProjectFile(file: File): void
 }
 
 export function useVoiceCanvasController(): VoiceCanvasController {
   const commandManager = useMemo(
-    () => new CommandManager(createDemoProjectState()),
+    () => new CommandManager(loadStoredProjectState() ?? createDemoProjectState()),
     [],
   )
   const [projectState, setProjectState] = useState(() => commandManager.getState())
@@ -61,6 +65,11 @@ export function useVoiceCanvasController(): VoiceCanvasController {
         ...entries,
       ].slice(0, 8),
     )
+  }
+
+  const commitProjectState = (nextState: ProjectState): void => {
+    saveProjectState(nextState)
+    setProjectState(nextState)
   }
 
   const requestPlan = () => {
@@ -92,12 +101,23 @@ export function useVoiceCanvasController(): VoiceCanvasController {
     })
 
     if (localResult.status === 'handled') {
-      setProjectState(localResult.state)
+      commitProjectState(localResult.state)
       setPendingPlan(null)
       setStatusMessage(localResult.message)
       appendCommandLog({
         label: '本地命令',
         detail: localResult.message,
+        tone: 'success',
+      })
+      return
+    }
+
+    if (localResult.status === 'export') {
+      setPendingPlan(null)
+      setStatusMessage(localResult.message)
+      appendCommandLog({
+        label: '导出',
+        detail: localResult.format === 'png' ? 'PNG 图片' : '项目 JSON',
         tone: 'success',
       })
       return
@@ -145,7 +165,7 @@ export function useVoiceCanvasController(): VoiceCanvasController {
     })
     const nextState = commandManager.execute(command)
 
-    setProjectState(nextState)
+    commitProjectState(nextState)
     setPendingPlan(null)
     setStatusMessage(`已执行：${pendingPlan.summary}`)
     appendCommandLog({
@@ -196,7 +216,7 @@ export function useVoiceCanvasController(): VoiceCanvasController {
   const undo = () => {
     const nextState = commandManager.undo()
 
-    setProjectState(nextState)
+    commitProjectState(nextState)
     setStatusMessage('已撤销上一步生成')
     appendCommandLog({
       label: '撤销',
@@ -208,12 +228,47 @@ export function useVoiceCanvasController(): VoiceCanvasController {
   const redo = () => {
     const nextState = commandManager.redo()
 
-    setProjectState(nextState)
+    commitProjectState(nextState)
     setStatusMessage('已重做上一步生成')
     appendCommandLog({
       label: '重做',
       detail: '上一步操作',
       tone: 'success',
+    })
+  }
+
+  const preparePngExport = () => {
+    setStatusMessage('PNG 导出已准备')
+    appendCommandLog({
+      label: '导出',
+      detail: 'PNG 图片',
+      tone: 'success',
+    })
+  }
+
+  const importProjectFile = (file: File) => {
+    void file.text().then((content) => {
+      const result = parseProjectImport(content)
+
+      if (!result.ok) {
+        setStatusMessage(result.message)
+        appendCommandLog({
+          label: '导入失败',
+          detail: result.message,
+          tone: 'warning',
+        })
+        return
+      }
+
+      commandManager.reset(result.project)
+      commitProjectState(result.project)
+      setPendingPlan(null)
+      setStatusMessage('已导入项目 JSON')
+      appendCommandLog({
+        label: '导入',
+        detail: result.project.title,
+        tone: 'success',
+      })
     })
   }
 
@@ -232,5 +287,7 @@ export function useVoiceCanvasController(): VoiceCanvasController {
     cancelPendingPlan,
     undo,
     redo,
+    preparePngExport,
+    importProjectFile,
   }
 }
