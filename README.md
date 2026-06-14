@@ -9,6 +9,7 @@ Voice Canvas is an AI voice drawing tool. The MVP focuses on a voice-first struc
 - `npm run lint`: run ESLint.
 - `npm run preview`: preview the production build.
 - `npm run test`: run unit tests.
+- `npm run test:e2e`: run the Playwright MVP browser flow. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` when using a locally installed Chromium build.
 
 ## Current Status
 
@@ -24,6 +25,7 @@ This branch contains the runnable frontend foundation. The implementation is int
 - Vite: local development server and production build.
 - ESLint and TypeScript ESLint: lint TypeScript and React source.
 - Vitest and jsdom: run browser-like unit tests for state, command, and interaction modules.
+- Playwright Test: run browser-level MVP acceptance flows without pixel assertions.
 
 ## PR Requirements
 
