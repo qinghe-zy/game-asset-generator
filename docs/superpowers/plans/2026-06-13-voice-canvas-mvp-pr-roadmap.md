@@ -4,9 +4,9 @@
 
 **Goal:** Deliver a complete, reviewable Voice Canvas MVP through small PRs while keeping `main` runnable and demo-ready after every merge.
 
-**Architecture:** Build the product in thin vertical layers: foundation, state and command core, layout, canvas renderer, Agent pipeline, voice orchestration, UI integration, Serverless proxy, export/persistence, final documentation, and release verification. Each PR owns one capability and includes tests, manual acceptance, review notes, GitHub synchronization, and a clear PR description.
+**Architecture:** Build the product in thin vertical layers: foundation, state and command core, layout, canvas renderer, Agent pipeline, voice orchestration, UI integration, VPS-hosted API proxy, export/persistence, final documentation, and release verification. Each PR owns one capability and includes tests, manual acceptance, review notes, GitHub synchronization, and a clear PR description.
 
-**Tech Stack:** React 19, TypeScript, Vite, Vitest, Fabric.js, dagre, d3-hierarchy, browser Web Speech API, Web Audio API, local Node/Express proxy, domestic Serverless deployment docs, DeepSeek-compatible LLM adapter.
+**Tech Stack:** React 19, TypeScript, Vite, Vitest, Fabric.js, dagre, d3-hierarchy, browser Web Speech API, Web Audio API, Node/Express API proxy on Ubuntu 22.04 behind Nginx, optional Serverless-compatible deployment docs, DeepSeek-compatible LLM adapter.
 
 ---
 
@@ -190,7 +190,7 @@ The MVP is complete only when all of these are true:
 - Basic voice/local commands work: undo, redo, select, recolor, delete, clear, export.
 - Multi-turn context uses a compact canvas summary.
 - Incremental layout adds nodes without destroying existing layout.
-- LLM can be called through a local proxy or Serverless-compatible adapter.
+- LLM can be called through the VPS-hosted API proxy, with the same API contract kept portable to Serverless later.
 - LLM failure falls back to local templates.
 - STT unavailable state is handled with clear UI and text debug fallback.
 - Export PNG and project JSON work.
@@ -201,7 +201,7 @@ The MVP is complete only when all of these are true:
 
 ## 5. PR Sequence Overview
 
-The roadmap is split into 11 phases, 43 code/documentation PRs, and 1 local GitHub setup check.
+The roadmap is split into 11 phases, 44 code/documentation PRs, and 1 local GitHub setup check.
 
 Each PR should stay small. A PR can be split further during goal mode if its diff grows beyond a comfortable review size.
 
@@ -1163,7 +1163,7 @@ npm run lint
 
 **Implementation details:**
 
-- Show API mode: local template, local proxy, Serverless.
+- Show API mode: local template, VPS API proxy, Serverless-compatible adapter.
 - Toggle earcons.
 - Toggle text debug input.
 - Avoid exposing API keys in UI.
@@ -1262,9 +1262,9 @@ npm run lint
 
 - No model key in frontend.
 
-### PR H2: Local Node/Express API Proxy
+### PR H2: Node/Express API Proxy
 
-**Purpose:** Provide local `/api/agent` for development.
+**Purpose:** Provide the production-ready `/api/agent` proxy used both locally and on the Ubuntu VPS.
 
 **Files:**
 
@@ -1278,15 +1278,20 @@ npm run lint
 **Implementation details:**
 
 - Install minimal server dependencies.
-- Read key from server environment.
+- Listen on configurable host and port; production default is `127.0.0.1:3000` behind Nginx.
+- Expose `GET /api/health`.
+- Expose `POST /api/agent/plan`.
+- Read model keys from server environment only.
 - Validate request body.
 - Timeout model call.
 - Return AgentPlan JSON.
 - Vite proxy forwards `/api`.
+- Keep handlers stateless so the same code can later move to Serverless if needed.
 
 **Automated checks:**
 
 ```bash
+npm run test -- api
 npm run build
 npm run lint
 ```
@@ -1294,11 +1299,12 @@ npm run lint
 **Manual acceptance:**
 
 - Local frontend can call local proxy.
+- Production route can be reached through `https://040415.xyz/api/health` after deployment.
 - Missing API key returns clear error and frontend falls back to local templates.
 
 **Review gate:**
 
-- README lists server dependency and local run command.
+- README lists server dependency, local run command, and VPS production command.
 - No key committed.
 
 ### PR H3: DeepSeek Prompt and Schema
@@ -1335,21 +1341,24 @@ npm run lint
 
 - Prompt does not claim unsupported image generation.
 
-### PR H4: Serverless Deployment Docs
+### PR H4: VPS Deployment Docs
 
-**Purpose:** Document production path without requiring self-managed server.
+**Purpose:** Document the real production path for `040415.xyz` on Ubuntu 22.04 with Nginx and a local Node API proxy.
 
 **Files:**
 
-- Create `docs/deployment/alibaba-function-compute.md`.
+- Create `docs/deployment/vps-nginx.md`.
 - Modify `README.md`.
 
 **Implementation details:**
 
-- Explain static frontend + API Gateway + Function Compute.
-- Explain environment variables.
-- Explain API Gateway rate limiting.
-- Explain China network assumptions.
+- Explain static frontend deployment to `/var/www/040415.xyz/html`.
+- Explain Nginx serving `https://040415.xyz` and `https://www.040415.xyz`.
+- Explain `/api/` reverse proxy to `http://127.0.0.1:3000/api/`.
+- Explain server environment variables and systemd process management.
+- Explain where model keys live and why they are never shipped to the browser.
+- Explain China network assumptions and recommended domestic LLM providers.
+- Keep a short note that the API proxy is stateless and can be migrated to Serverless later.
 
 **Automated checks:**
 
@@ -1360,18 +1369,51 @@ npm run lint
 
 **Manual acceptance:**
 
-- A reviewer understands how production hides model keys.
+- A reviewer understands how to deploy the static frontend and API proxy to the provided server.
+- The document includes the assigned domain, public IP, Nginx role, site directory, and HTTPS status.
 
 **Review gate:**
 
 - No false claim that Vite alone hosts `/api`.
+- No secrets, private keys, or server passwords are written into the repository.
+
+### PR H5: Serverless Compatibility Notes
+
+**Purpose:** Preserve the future Serverless deployment path without blocking the VPS-first MVP.
+
+**Files:**
+
+- Create `docs/deployment/serverless-compatibility.md`.
+- Modify `README.md`.
+
+**Implementation details:**
+
+- Explain how the stateless API handler can move behind API Gateway or Function Compute later.
+- Explain API Gateway rate limiting as the preferred Serverless rate-limit layer.
+- Explain that the MVP production target remains the provided VPS.
+
+**Automated checks:**
+
+```bash
+npm run build
+npm run lint
+```
+
+**Manual acceptance:**
+
+- A reviewer can distinguish the current VPS deployment path from the optional future Serverless path.
+
+**Review gate:**
+
+- Serverless docs do not contradict the VPS deployment guide.
 
 ### Phase H Module Acceptance
 
 Manual review:
 
 - Local template mode works.
-- Local proxy mode works when configured.
+- VPS API proxy mode works when configured.
+- `https://040415.xyz/api/health` responds after deployment.
 - Missing/failed LLM falls back gracefully.
 - README and deployment docs match actual commands.
 
@@ -1540,7 +1582,8 @@ npm run lint
 - List implemented command capabilities.
 - List unfinished features with reasons.
 - Mention STT limitations.
-- Mention Serverless/API Gateway requirement for system-owned keys.
+- Mention VPS/Nginx API proxy requirement for system-owned keys.
+- Mention Serverless/API Gateway as a future-compatible deployment option, not the MVP production target.
 - Mention local template fallback.
 
 **Automated checks:**
@@ -1648,7 +1691,8 @@ npm run lint
 - Document why frontend bundles cannot safely contain system-owned keys.
 - Check `.gitignore` covers local env files.
 - Check README does not ask users to paste production keys into frontend code.
-- Check Serverless/API Gateway guidance is consistent with implementation.
+- Check VPS/Nginx guidance is consistent with implementation.
+- Check Serverless/API Gateway compatibility notes do not contradict the VPS production path.
 
 **Automated checks:**
 
