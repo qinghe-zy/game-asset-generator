@@ -1,5 +1,16 @@
 import { expect, test } from '@playwright/test'
 
+interface DebugProjectState {
+  elementOrder: string[]
+  elements: Record<string, {
+    id: string
+    kind: string
+    label?: string
+    fromId?: string
+    toId?: string
+  }>
+}
+
 test('creates and executes a local plan through text fallback', async ({ page }) => {
   await page.goto('/')
 
@@ -17,15 +28,29 @@ test('creates and executes a local plan through text fallback', async ({ page })
   await expect(page.getByLabel('运行状态')).toContainText('已执行')
   await expect(page.getByLabel('命令日志')).toContainText('执行：创建注册登录流程')
 
-  const projectState = await page.evaluate(() => window.getProjectState?.())
+  const projectState = await page.evaluate<DebugProjectState | undefined>(
+    () => window.getProjectState?.(),
+  )
 
-  expect(projectState?.elements['flow-entry']).toMatchObject({
+  expect(projectState?.elementOrder).toHaveLength(16)
+
+  const elements = Object.values(projectState?.elements ?? {})
+  const entry = elements.find((element) => element.label === '打开入口')
+  const account = elements.find((element) => element.label === '输入账号')
+  const entryToAccount = elements.find(
+    (element) =>
+      element.kind === 'connector' &&
+      element.fromId === entry?.id &&
+      element.toId === account?.id,
+  )
+
+  expect(entry).toMatchObject({
     kind: 'shape',
     label: '打开入口',
   })
-  expect(projectState?.elements['connector-flow-1']).toMatchObject({
+  expect(entryToAccount).toMatchObject({
     kind: 'connector',
-    fromId: 'flow-entry',
-    toId: 'flow-account',
+    fromId: entry?.id,
+    toId: account?.id,
   })
 })
