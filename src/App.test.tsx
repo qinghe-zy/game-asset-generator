@@ -97,6 +97,60 @@ describe('App pending plan runtime', () => {
     expect(screen.textContent).toContain('执行：创建注册登录流程')
   })
 
+  it('shows pending operation counts before execution', () => {
+    const screen = renderApp()
+    const input = screen.querySelector<HTMLInputElement>(
+      'input[aria-label="文本兼容输入"]',
+    )
+    const submit = screen.querySelector<HTMLButtonElement>(
+      'button[data-testid="submit-text-plan"]',
+    )
+
+    expect(input).not.toBeNull()
+    expect(submit).not.toBeNull()
+
+    changeInput(input!, '画一个用户注册登录流程图')
+    click(submit!)
+
+    expect(screen.textContent).toContain('新增 11')
+    expect(screen.textContent).toContain('修改 0')
+    expect(screen.textContent).toContain('删除 0')
+  })
+
+  it('lets a user refine a pending plan with text and records the refinement', () => {
+    const screen = renderApp()
+    const input = screen.querySelector<HTMLInputElement>(
+      'input[aria-label="文本兼容输入"]',
+    )
+    const submit = screen.querySelector<HTMLButtonElement>(
+      'button[data-testid="submit-text-plan"]',
+    )
+
+    expect(input).not.toBeNull()
+    expect(submit).not.toBeNull()
+
+    changeInput(input!, '画一个用户注册登录流程图')
+    click(submit!)
+
+    const refineInput = screen.querySelector<HTMLInputElement>(
+      'input[aria-label="文本微调计划"]',
+    )
+    const refineButton = screen.querySelector<HTMLButtonElement>(
+      'button[data-testid="refine-pending-plan"]',
+    )
+
+    expect(refineInput).not.toBeNull()
+    expect(refineButton).not.toBeNull()
+
+    changeInput(refineInput!, '改成三层系统架构，包含数据库和短信服务')
+    click(refineButton!)
+
+    expect(screen.textContent).toContain('创建三层架构图')
+    expect(screen.textContent).toContain(
+      '微调：改成三层系统架构，包含数据库和短信服务',
+    )
+  })
+
   it('records cancellation and undo redo outcomes in the command log', () => {
     const screen = renderApp()
     const input = screen.querySelector<HTMLInputElement>(
