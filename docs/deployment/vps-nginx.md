@@ -93,3 +93,5 @@ The MVP uses a domestic-friendly server-side proxy so users do not need direct b
 ## Future Serverless Compatibility
 
 The API handler is stateless by design. It can later move behind a domestic API Gateway and Function Compute runtime. If that happens, rate limiting should be configured at the gateway layer instead of relying on function memory.
+
+See [Serverless compatibility notes](serverless-compatibility.md) for the detailed migration boundary and gateway control checklist.
