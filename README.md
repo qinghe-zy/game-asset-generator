@@ -16,6 +16,19 @@ Voice Canvas is an AI voice drawing tool. The MVP focuses on a voice-first struc
 
 Run `npm run verify:mvp` for final local acceptance. It runs `npm run build` before `npm run test:e2e` because both commands write to `dist`; running them in parallel can create false E2E failures.
 
+Run `npm run test:e2e` separately from `npm run build`; both commands write to `dist`.
+
+## Demo Flow
+
+1. Start the app with `npm run dev`.
+2. Use the text compatibility input if browser STT is unavailable.
+3. Enter `画一个用户注册登录流程图`.
+4. Review the pending plan.
+5. Execute the plan and confirm that the canvas item count, status bar, and command log update.
+6. Run `npm run test:e2e` to verify the same MVP flow in Chromium through DOM and ProjectState JSON assertions.
+
+See [docs/DESIGN.md](docs/DESIGN.md) for the planned capabilities, implemented capabilities, unfinished items, browser/STT limitations, and deployment notes.
+
 For local LLM testing, run the API and frontend in separate terminals:
 
 ```bash
@@ -27,7 +40,7 @@ Vite proxies `/api/*` to `http://127.0.0.1:3000`. In production, Nginx should se
 
 Copy `.env.example` to a local `.env` or configure equivalent process environment variables on the VPS. `DEEPSEEK_API_KEY` is server-side only and must not be added to frontend code.
 
-See [VPS deployment guide](docs/deployment/vps-nginx.md) for the `040415.xyz` production shape.
+See [VPS deployment guide](docs/deployment/vps-nginx.md) for the `040415.xyz` production shape. See [Serverless compatibility notes](docs/deployment/serverless-compatibility.md) for the future API Gateway and cloud function migration path.
 
 ## Current Status
 
