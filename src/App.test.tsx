@@ -49,6 +49,39 @@ function click(button: HTMLButtonElement) {
 }
 
 describe('App pending plan runtime', () => {
+  it('provides keyboard landmarks and accessible fallback controls', () => {
+    const screen = renderApp()
+    const skipLink = screen.querySelector<HTMLAnchorElement>(
+      'a[href="#voice-canvas-workspace"]',
+    )
+    const workspace = screen.querySelector<HTMLElement>(
+      '#voice-canvas-workspace',
+    )
+    const voiceForm = screen.querySelector<HTMLFormElement>(
+      'form[aria-label="文本调试命令"]',
+    )
+
+    expect(skipLink).not.toBeNull()
+    expect(skipLink?.textContent).toContain('跳到画布')
+    expect(workspace).not.toBeNull()
+    expect(workspace?.getAttribute('tabindex')).toBe('-1')
+    expect(voiceForm).not.toBeNull()
+    expect(
+      screen.querySelector<HTMLInputElement>('input[aria-label="文本兼容输入"]'),
+    ).not.toBeNull()
+    expect(
+      screen.querySelector<HTMLButtonElement>(
+        'button[aria-label="提交文本命令生成计划"]',
+      ),
+    ).not.toBeNull()
+    expect(
+      screen.querySelector<HTMLButtonElement>('button[aria-label="撤销上一步"]'),
+    ).not.toBeNull()
+    expect(
+      screen.querySelector<HTMLButtonElement>('button[aria-label="重做上一步"]'),
+    ).not.toBeNull()
+  })
+
   it('shows runtime settings without exposing secrets', () => {
     const screen = renderApp()
 
@@ -159,6 +192,10 @@ describe('App pending plan runtime', () => {
     changeInput(input!, '画一个用户注册登录流程图')
     click(submit!)
 
+    expect(
+      screen.querySelector<HTMLElement>('[aria-label="待确认计划"]')
+        ?.getAttribute('tabindex'),
+    ).toBe('-1')
     expect(screen.textContent).toContain('创建注册登录流程')
     expect(screen.textContent).toContain('执行')
 

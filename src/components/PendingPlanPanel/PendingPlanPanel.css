@@ -20,6 +20,11 @@
   line-height: 24px;
 }
 
+.pendingPlanPanel:focus {
+  outline: 2px solid #171717;
+  outline-offset: 2px;
+}
+
 .pendingPlanContent {
   min-width: 0;
 }
@@ -87,6 +92,7 @@
 
 .pendingPlanRefine input {
   width: min(280px, 34vw);
+  min-height: 44px;
   border: 1px solid #dedede;
   border-radius: 999px;
   padding: 8px 12px;
@@ -104,11 +110,19 @@
 .pendingPlanActions button,
 .pendingPlanRefine button {
   border-radius: 999px;
+  min-height: 44px;
   padding: 8px 14px;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
   cursor: pointer;
+}
+
+.pendingPlanActions button:focus-visible,
+.pendingPlanRefine button:focus-visible,
+.pendingPlanRefine input:focus {
+  outline: 2px solid #171717;
+  outline-offset: 2px;
 }
 
 .pendingPlanPrimary {

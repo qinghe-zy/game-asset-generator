@@ -45,7 +45,7 @@
 }
 
 .settingsField select {
-  height: 36px;
+  min-height: 44px;
   border: 1px solid #dedede;
   border-radius: 6px;
   padding: 0 10px;
@@ -63,6 +63,7 @@
 .settingsToggle {
   grid-template-columns: auto 1fr;
   align-items: center;
+  min-height: 44px;
   cursor: pointer;
 }
 

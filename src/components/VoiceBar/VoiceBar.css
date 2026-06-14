@@ -42,7 +42,7 @@
 
 .voiceControlForm input {
   min-width: 0;
-  height: 38px;
+  height: 44px;
   border: 1px solid #ebebeb;
   border-radius: 6px;
   padding: 0 12px;
@@ -53,11 +53,12 @@
 
 .voiceControlForm input:focus {
   border-color: #171717;
-  outline: 0;
+  outline: 2px solid #171717;
+  outline-offset: 2px;
 }
 
 .voiceControlForm button {
-  height: 38px;
+  min-height: 44px;
   border: 1px solid #171717;
   border-radius: 999px;
   padding: 0 14px;
@@ -67,6 +68,11 @@
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+}
+
+.voiceControlForm button:focus-visible {
+  outline: 2px solid #171717;
+  outline-offset: 2px;
 }
 
 .voiceControlForm .voiceControlSecondary {

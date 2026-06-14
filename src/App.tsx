@@ -24,6 +24,9 @@ function App() {
 
   return (
     <main className="appShell">
+      <a className="skipLink" href="#voice-canvas-workspace">
+        跳到画布
+      </a>
       <StatusBar
         title="AI 语音绘图工作台"
         subtitle="Local agent · structured canvas"
@@ -35,7 +38,12 @@ function App() {
         ]}
       />
 
-      <section className="workspace" aria-label="Voice Canvas workspace">
+      <section
+        id="voice-canvas-workspace"
+        className="workspace"
+        aria-label="Voice Canvas workspace"
+        tabIndex={-1}
+      >
         <div className="canvasColumn">
           {controller.pendingPlan ? (
             <PendingPlanPanel
