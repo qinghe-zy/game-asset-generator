@@ -1,0 +1,80 @@
+.settingsPanel {
+  border-bottom: 1px solid #ebebeb;
+  background: #ffffff;
+}
+
+.settingsPanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-bottom: 1px solid #ebebeb;
+}
+
+.settingsPanelHeader span {
+  color: #888888;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.settingsPanelHeader strong {
+  color: #171717;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: right;
+}
+
+.settingsField,
+.settingsToggle {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #ebebeb;
+}
+
+.settingsField span,
+.settingsToggle span {
+  color: #4d4d4d;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.settingsField select {
+  height: 36px;
+  border: 1px solid #dedede;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #ffffff;
+  color: #171717;
+  font-size: 13px;
+}
+
+.settingsField select:focus,
+.settingsToggle input:focus-visible {
+  outline: 2px solid #171717;
+  outline-offset: 2px;
+}
+
+.settingsToggle {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  cursor: pointer;
+}
+
+.settingsToggle input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #171717;
+}
+
+@media (max-width: 1080px) {
+  .settingsPanel {
+    border-top: 1px solid #ebebeb;
+  }
+}

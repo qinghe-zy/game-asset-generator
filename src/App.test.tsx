@@ -49,6 +49,88 @@ function click(button: HTMLButtonElement) {
 }
 
 describe('App pending plan runtime', () => {
+  it('shows runtime settings without exposing secrets', () => {
+    const screen = renderApp()
+
+    expect(screen.querySelector('[aria-label="运行设置"]')).not.toBeNull()
+    expect(screen.textContent).toContain('Runtime settings')
+    expect(screen.textContent).toContain('Local template')
+    expect(screen.textContent).toContain('VPS API proxy')
+    expect(screen.textContent).toContain('Serverless-compatible')
+    expect(screen.textContent).toContain('音效反馈')
+    expect(screen.textContent).toContain('文本调试输入')
+    expect(screen.textContent).not.toContain('API Key')
+    expect(screen.textContent).not.toContain('sk-')
+  })
+
+  it('persists runtime settings and hides the text debug input when disabled', () => {
+    const screen = renderApp()
+    const textDebugToggle = screen.querySelector<HTMLInputElement>(
+      'input[aria-label="切换文本调试输入"]',
+    )
+    const earconToggle = screen.querySelector<HTMLInputElement>(
+      'input[aria-label="切换音效反馈"]',
+    )
+    const runtimeMode = screen.querySelector<HTMLSelectElement>(
+      'select[aria-label="API 运行模式"]',
+    )
+
+    expect(textDebugToggle).not.toBeNull()
+    expect(earconToggle).not.toBeNull()
+    expect(runtimeMode).not.toBeNull()
+    expect(
+      screen.querySelector<HTMLInputElement>('input[aria-label="文本兼容输入"]'),
+    ).not.toBeNull()
+
+    act(() => {
+      textDebugToggle!.click()
+      earconToggle!.click()
+      runtimeMode!.value = 'vps-proxy'
+      runtimeMode!.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+
+    expect(
+      screen.querySelector<HTMLInputElement>('input[aria-label="文本兼容输入"]'),
+    ).toBeNull()
+    expect(localStorage.getItem('voice-canvas-runtime-config')).toContain(
+      '"textDebugEnabled":false',
+    )
+    expect(localStorage.getItem('voice-canvas-runtime-config')).toContain(
+      '"earconsEnabled":false',
+    )
+    expect(localStorage.getItem('voice-canvas-runtime-config')).toContain(
+      '"apiMode":"vps-proxy"',
+    )
+
+    root?.unmount()
+    root = null
+    container?.remove()
+    container = null
+
+    const rerendered = renderApp()
+
+    expect(
+      rerendered.querySelector<HTMLInputElement>(
+        'input[aria-label="文本兼容输入"]',
+      ),
+    ).toBeNull()
+    expect(
+      rerendered.querySelector<HTMLInputElement>(
+        'input[aria-label="切换文本调试输入"]',
+      )?.checked,
+    ).toBe(false)
+    expect(
+      rerendered.querySelector<HTMLInputElement>(
+        'input[aria-label="切换音效反馈"]',
+      )?.checked,
+    ).toBe(false)
+    expect(
+      rerendered.querySelector<HTMLSelectElement>(
+        'select[aria-label="API 运行模式"]',
+      )?.value,
+    ).toBe('vps-proxy')
+  })
+
   it('shows a text compatibility input for local planning', () => {
     const screen = renderApp()
 

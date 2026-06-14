@@ -18,6 +18,13 @@
   padding: 20px 24px;
 }
 
+.sideColumn {
+  min-width: 0;
+  min-height: 0;
+  border-left: 1px solid #ebebeb;
+  background: #ffffff;
+}
+
 @media (max-width: 1080px) {
   .workspace {
     grid-template-columns: 1fr;
@@ -25,5 +32,9 @@
 
   .canvasColumn {
     padding: 16px;
+  }
+
+  .sideColumn {
+    border-left: 0;
   }
 }

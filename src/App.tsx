@@ -1,13 +1,26 @@
+import { useState } from 'react'
 import './App.css'
 import { useVoiceCanvasController } from './app/useVoiceCanvasController'
 import { CanvasStage } from './components/CanvasStage/CanvasStage'
 import { CommandLog } from './components/CommandLog/CommandLog'
 import { PendingPlanPanel } from './components/PendingPlanPanel/PendingPlanPanel'
+import { SettingsPanel } from './components/SettingsPanel/SettingsPanel'
 import { StatusBar } from './components/StatusBar/StatusBar'
 import { VoiceBar } from './components/VoiceBar/VoiceBar'
+import {
+  loadRuntimeConfig,
+  saveRuntimeConfig,
+  type RuntimeConfig,
+} from './config/runtimeConfig'
 
 function App() {
   const controller = useVoiceCanvasController()
+  const [runtimeConfig, setRuntimeConfig] = useState(loadRuntimeConfig)
+
+  const updateRuntimeConfig = (nextConfig: RuntimeConfig) => {
+    setRuntimeConfig(nextConfig)
+    saveRuntimeConfig(nextConfig)
+  }
 
   return (
     <main className="appShell">
@@ -34,13 +47,20 @@ function App() {
           ) : null}
           <CanvasStage projectState={controller.projectState} />
         </div>
-        <CommandLog entries={controller.commandLog} />
+        <div className="sideColumn">
+          <SettingsPanel
+            config={runtimeConfig}
+            onConfigChange={updateRuntimeConfig}
+          />
+          <CommandLog entries={controller.commandLog} />
+        </div>
       </section>
 
       <VoiceBar
         textPrompt={controller.textPrompt}
         canUndo={controller.canUndo}
         canRedo={controller.canRedo}
+        textDebugEnabled={runtimeConfig.textDebugEnabled}
         onTextPromptChange={controller.setTextPrompt}
         onSubmitText={controller.requestPlan}
         onUndo={controller.undo}

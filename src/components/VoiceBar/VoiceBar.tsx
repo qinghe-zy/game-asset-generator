@@ -5,6 +5,7 @@ export interface VoiceBarProps {
   textPrompt: string
   canUndo: boolean
   canRedo: boolean
+  textDebugEnabled: boolean
   onTextPromptChange(prompt: string): void
   onSubmitText(): void
   onUndo(): void
@@ -15,6 +16,7 @@ export function VoiceBar({
   textPrompt,
   canUndo,
   canRedo,
+  textDebugEnabled,
   onTextPromptChange,
   onSubmitText,
   onUndo,
@@ -28,19 +30,26 @@ export function VoiceBar({
   return (
     <footer className="voiceControlBar" aria-label="语音控制">
       <div className="voiceControlCopy">
-        <strong>文本兼容模式</strong>
-        <span>STT 文本兜底 · Local agent route</span>
+        <strong>{textDebugEnabled ? '文本兼容模式' : '语音优先模式'}</strong>
+        <span>{textDebugEnabled ? 'STT 文本兜底 · Local agent route' : '文本调试输入已隐藏'}</span>
       </div>
-      <form className="voiceControlForm" onSubmit={submitTextPlan}>
-        <input
-          aria-label="文本兼容输入"
-          value={textPrompt}
-          onChange={(event) => onTextPromptChange(event.target.value)}
-          placeholder="画一个用户注册登录流程图"
-        />
-        <button type="submit" data-testid="submit-text-plan">
-          生成计划
-        </button>
+      <form
+        className={`voiceControlForm ${textDebugEnabled ? '' : 'voiceControlForm-compact'}`}
+        onSubmit={submitTextPlan}
+      >
+        {textDebugEnabled ? (
+          <>
+            <input
+              aria-label="文本兼容输入"
+              value={textPrompt}
+              onChange={(event) => onTextPromptChange(event.target.value)}
+              placeholder="画一个用户注册登录流程图"
+            />
+            <button type="submit" data-testid="submit-text-plan">
+              生成计划
+            </button>
+          </>
+        ) : null}
         <button
           type="button"
           className="voiceControlSecondary"
