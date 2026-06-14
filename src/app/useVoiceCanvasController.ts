@@ -24,6 +24,7 @@ export interface VoiceCanvasController {
   canRedo: boolean
   setTextPrompt(prompt: string): void
   requestPlan(): void
+  refinePendingPlan(refinement: string): void
   executePendingPlan(): void
   cancelPendingPlan(): void
   undo(): void
@@ -154,6 +155,34 @@ export function useVoiceCanvasController(): VoiceCanvasController {
     })
   }
 
+  const refinePendingPlan = (refinement: string) => {
+    const prompt = refinement.trim()
+
+    if (!prompt) {
+      setStatusMessage('请输入微调内容')
+      appendCommandLog({
+        label: '提示',
+        detail: '请输入微调内容',
+        tone: 'warning',
+      })
+      return
+    }
+
+    const plan = createLocalTemplatePlan(prompt)
+    setPendingPlan(plan)
+    setStatusMessage('计划已根据文本微调更新')
+    appendCommandLog({
+      label: '微调',
+      detail: prompt,
+      tone: 'neutral',
+    })
+    appendCommandLog({
+      label: '计划',
+      detail: plan.summary,
+      tone: 'neutral',
+    })
+  }
+
   const cancelPendingPlan = () => {
     setPendingPlan(null)
     setStatusMessage('已取消待执行计划')
@@ -198,6 +227,7 @@ export function useVoiceCanvasController(): VoiceCanvasController {
     canRedo: commandManager.getRedoCount() > 0,
     setTextPrompt,
     requestPlan,
+    refinePendingPlan,
     executePendingPlan,
     cancelPendingPlan,
     undo,

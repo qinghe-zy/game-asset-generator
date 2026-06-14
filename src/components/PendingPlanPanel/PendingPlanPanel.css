@@ -20,6 +20,10 @@
   line-height: 24px;
 }
 
+.pendingPlanContent {
+  min-width: 0;
+}
+
 .pendingPlanEyebrow {
   margin: 0 0 4px;
   color: #888888;
@@ -36,13 +40,69 @@
   line-height: 18px;
 }
 
-.pendingPlanActions {
+.pendingPlanCounts {
   display: flex;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+
+.pendingPlanCounts div {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  border: 1px solid #ebebeb;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #fafafa;
+}
+
+.pendingPlanCounts dt,
+.pendingPlanCounts dd {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.pendingPlanCounts dt {
+  color: #6b6b6b;
+}
+
+.pendingPlanCounts dd {
+  color: #171717;
+  font-weight: 600;
+}
+
+.pendingPlanControls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 8px;
   flex-shrink: 0;
 }
 
-.pendingPlanActions button {
+.pendingPlanRefine {
+  display: flex;
+  gap: 8px;
+}
+
+.pendingPlanRefine input {
+  width: min(280px, 34vw);
+  border: 1px solid #dedede;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #ffffff;
+  color: #171717;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.pendingPlanActions {
+  display: flex;
+  gap: 8px;
+}
+
+.pendingPlanActions button,
+.pendingPlanRefine button {
   border-radius: 999px;
   padding: 8px 14px;
   font-size: 14px;
@@ -67,6 +127,19 @@
   .pendingPlanPanel {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .pendingPlanControls {
+    align-items: stretch;
+  }
+
+  .pendingPlanRefine {
+    flex-wrap: wrap;
+  }
+
+  .pendingPlanRefine input {
+    flex: 1 1 180px;
+    width: auto;
   }
 
   .pendingPlanActions {

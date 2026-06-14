@@ -29,6 +29,7 @@ function App() {
               plan={controller.pendingPlan}
               onExecute={controller.executePendingPlan}
               onCancel={controller.cancelPendingPlan}
+              onRefine={controller.refinePendingPlan}
             />
           ) : null}
           <CanvasStage projectState={controller.projectState} />
