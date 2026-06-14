@@ -10,6 +10,9 @@ export interface VoiceBarProps {
   onSubmitText(): void
   onUndo(): void
   onRedo(): void
+  onExportPng(): void
+  onExportProject(): void
+  onImportProject(file: File): void
 }
 
 export function VoiceBar({
@@ -21,6 +24,9 @@ export function VoiceBar({
   onSubmitText,
   onUndo,
   onRedo,
+  onExportPng,
+  onExportProject,
+  onImportProject,
 }: VoiceBarProps) {
   const submitTextPlan = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -75,6 +81,39 @@ export function VoiceBar({
         >
           重做
         </button>
+        <button
+          type="button"
+          className="voiceControlSecondary"
+          data-testid="export-png"
+          aria-label="导出 PNG"
+          onClick={onExportPng}
+        >
+          PNG
+        </button>
+        <button
+          type="button"
+          className="voiceControlSecondary"
+          data-testid="export-project-json"
+          aria-label="导出项目 JSON"
+          onClick={onExportProject}
+        >
+          JSON
+        </button>
+        <label className="voiceControlFileButton">
+          导入
+          <input
+            type="file"
+            accept=".json,.voicecanvas.json,application/json"
+            aria-label="导入项目 JSON"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (file) {
+                onImportProject(file)
+                event.target.value = ''
+              }
+            }}
+          />
+        </label>
       </form>
     </footer>
   )

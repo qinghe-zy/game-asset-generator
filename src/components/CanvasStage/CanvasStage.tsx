@@ -10,9 +10,13 @@ const CANVAS_HEIGHT = 720
 
 export interface CanvasStageProps {
   projectState: ProjectState
+  onPngExporterChange?(exporter: (() => string) | null): void
 }
 
-export function CanvasStage({ projectState }: CanvasStageProps) {
+export function CanvasStage({
+  projectState,
+  onPngExporterChange,
+}: CanvasStageProps) {
   const canvasElementRef = useRef<HTMLCanvasElement | null>(null)
   const fabricCanvasRef = useRef<Canvas | null>(null)
 
@@ -34,12 +38,19 @@ export function CanvasStage({ projectState }: CanvasStageProps) {
       height: CANVAS_HEIGHT,
     })
     fabricCanvasRef.current = fabricCanvas
+    onPngExporterChange?.(() =>
+      fabricCanvas.toDataURL({
+        format: 'png',
+        multiplier: 2,
+      }),
+    )
 
     return () => {
+      onPngExporterChange?.(null)
       fabricCanvasRef.current = null
       void fabricCanvas.dispose()
     }
-  }, [])
+  }, [onPngExporterChange])
 
   useEffect(() => {
     const cleanupProjectStateDebug = registerProjectStateDebug(() => projectState)
