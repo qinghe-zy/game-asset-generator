@@ -31,7 +31,12 @@ export function PendingPlanPanel({
         >
           执行
         </button>
-        <button type="button" className="pendingPlanSecondary" onClick={onCancel}>
+        <button
+          type="button"
+          className="pendingPlanSecondary"
+          data-testid="cancel-pending-plan"
+          onClick={onCancel}
+        >
           取消
         </button>
       </div>

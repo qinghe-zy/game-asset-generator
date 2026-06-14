@@ -1,0 +1,89 @@
+.voiceControlBar {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 28px;
+  border-top: 1px solid #ebebeb;
+  background: #ffffff;
+}
+
+.voiceControlCopy {
+  min-width: 0;
+}
+
+.voiceControlCopy strong {
+  display: block;
+  color: #171717;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.voiceControlCopy span {
+  display: block;
+  margin-top: 2px;
+  color: #888888;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.voiceControlForm {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.voiceControlForm input {
+  min-width: 0;
+  height: 38px;
+  border: 1px solid #ebebeb;
+  border-radius: 6px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: #171717;
+  font-size: 14px;
+}
+
+.voiceControlForm input:focus {
+  border-color: #171717;
+  outline: 0;
+}
+
+.voiceControlForm button {
+  height: 38px;
+  border: 1px solid #171717;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: #171717;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.voiceControlForm .voiceControlSecondary {
+  border-color: #ebebeb;
+  background: #ffffff;
+  color: #171717;
+}
+
+.voiceControlForm button:disabled {
+  border-color: #ebebeb;
+  background: #f5f5f5;
+  color: #888888;
+  cursor: not-allowed;
+}
+
+@media (max-width: 920px) {
+  .voiceControlBar {
+    grid-template-columns: 1fr;
+    padding: 14px 16px;
+  }
+
+  .voiceControlForm {
+    grid-template-columns: 1fr;
+  }
+}

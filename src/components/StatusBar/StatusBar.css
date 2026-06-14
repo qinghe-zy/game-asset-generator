@@ -1,0 +1,110 @@
+.statusBar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+  min-height: 82px;
+  padding: 18px 28px;
+  border-bottom: 1px solid #ebebeb;
+  background: #ffffff;
+}
+
+.statusBarIdentity {
+  min-width: 0;
+}
+
+.statusBarEyebrow {
+  margin: 0 0 4px;
+  color: #888888;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.statusBar h1 {
+  margin: 0;
+  color: #171717;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+.statusBarIdentity p:last-child {
+  margin: 2px 0 0;
+  color: #4d4d4d;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.statusBarRuntime {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(96px, max-content));
+  gap: 0;
+  align-items: stretch;
+  border: 1px solid #ebebeb;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.statusBarSegment,
+.statusBarMessage {
+  min-height: 46px;
+  padding: 7px 12px;
+  border-right: 1px solid #ebebeb;
+}
+
+.statusBarSegment span {
+  display: block;
+  color: #888888;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  line-height: 14px;
+  text-transform: uppercase;
+}
+
+.statusBarSegment strong {
+  display: block;
+  margin-top: 2px;
+  color: #171717;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.statusBarSegment-ready strong {
+  color: #0761d1;
+}
+
+.statusBarSegment-warning strong {
+  color: #ab570a;
+}
+
+.statusBarMessage {
+  display: flex;
+  align-items: center;
+  max-width: 280px;
+  border-right: 0;
+  color: #4d4d4d;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+@media (max-width: 980px) {
+  .statusBar {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .statusBarRuntime {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .statusBarMessage {
+    grid-column: 1 / -1;
+    max-width: none;
+    border-top: 1px solid #ebebeb;
+  }
+}
