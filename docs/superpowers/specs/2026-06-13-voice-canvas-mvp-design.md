@@ -12,7 +12,7 @@ The selected direction is:
 - Use a structured canvas Agent as the core.
 - Support real LLM planning plus local template fallback.
 - Support long multi-turn conversations and complex request decomposition.
-- Use a China-friendly Serverless API proxy for production, with pure frontend fallback for development and degraded demos.
+- Use a China-friendly VPS-hosted API proxy for production, with pure frontend fallback for degraded demos and a Serverless-compatible API shape for future migration.
 - Keep the primary drawing and editing flow voice-driven after first microphone authorization.
 
 ## 2. Confirmed Scope
@@ -34,7 +34,8 @@ The selected direction is:
 - Runtime modes:
   - Local demo mode: Vite frontend plus local Node/Express API proxy.
   - Static fallback mode: frontend-only with templates and degraded LLM/STT behavior.
-  - China Serverless production mode: static frontend plus domestic Serverless API proxy.
+  - VPS production mode: static frontend on Nginx plus Node/Express API proxy on `127.0.0.1:3000`.
+  - Future Serverless-compatible mode: same API contract behind a domestic API Gateway and function runtime.
 - Design document that records planned capabilities, implemented capabilities, and unfinished items with reasons.
 
 ### Out of Scope for MVP
@@ -67,15 +68,16 @@ Browser Frontend
   -> FabricRenderer
 
 Production API
-  -> API Gateway rate limits
-  -> Serverless Function
+  -> Nginx /api reverse proxy
+  -> Node/Express API on 127.0.0.1:3000
   -> Domestic LLM provider
 ```
 
 The frontend is React, TypeScript, and Vite. Vite does not provide backend routing by itself. API routes must be hosted by an explicit environment:
 
 - In local development, a small Node/Express process exposes `/api/agent`; Vite forwards `/api/*` with a dev proxy.
-- In production, a domestic Serverless Function provides the API route. The frontend calls the configured API base URL.
+- In production, `https://040415.xyz` and `https://www.040415.xyz` are served by Nginx on Ubuntu 22.04. Static frontend files are deployed to `/var/www/040415.xyz/html`, and Nginx proxies `/api/*` to a Node/Express process listening on `127.0.0.1:3000`.
+- The API handler must remain stateless so it can later be moved behind a domestic Serverless Function and API Gateway if operations requirements change.
 
 The API proxy hides model keys, validates request size, calls the LLM, and returns a normalized `AgentPlan`.
 
@@ -518,14 +520,25 @@ Recommended production route:
 
 ```text
 Static frontend
-  -> API Gateway with rate limits
-  -> Domestic Serverless Function
+  -> Nginx on Ubuntu 22.04
+  -> /api reverse proxy
+  -> Node/Express API on 127.0.0.1:3000
   -> DeepSeek / Qwen / Zhipu
 ```
 
-The Serverless Function must remain stateless. Production rate limits should be configured in API Gateway or the cloud provider gateway layer, not in function memory.
+Assigned production environment:
 
-Gateway controls:
+- Domains: `https://040415.xyz` and `https://www.040415.xyz`.
+- Public IP: `20.78.128.220`.
+- OS: Ubuntu 22.04.
+- Web service: Nginx.
+- Static site directory: `/var/www/040415.xyz/html`.
+- HTTPS: Let's Encrypt certificate is already configured for both domains and auto-renews.
+- API process: Node/Express should listen on `127.0.0.1:3000`, with Nginx proxying `/api/*` to that process.
+
+The API process must remain stateless. Production rate limits can start with conservative in-process safeguards for the MVP, but the preferred production control point is Nginx, a WAF, or a future API Gateway layer.
+
+Production controls:
 
 - Per-IP QPS or per-minute limit.
 - Daily call cap.
@@ -539,6 +552,21 @@ Function responsibilities:
 - Call the model with timeout.
 - Parse and validate AgentPlan.
 - Return normalized result or typed error.
+
+### Future Serverless Compatibility
+
+The VPS path is the MVP production target. The API route should still be written so the request validation, prompt construction, model call, timeout handling, and AgentPlan validation can be extracted into a stateless handler later.
+
+Future Serverless route:
+
+```text
+Static frontend
+  -> API Gateway with rate limits
+  -> Domestic Serverless Function
+  -> DeepSeek / Qwen / Zhipu
+```
+
+For Serverless, rate limits should be configured in API Gateway or the cloud provider gateway layer, not in function memory.
 
 ### Local Development
 
@@ -625,8 +653,9 @@ The final `docs/DESIGN.md` must include:
 - Voice-only acceptance definition.
 - Browser/STT limitations.
 - Deployment modes and security tradeoffs.
-- Serverless hosting assumptions.
-- API Gateway rate-limit recommendation.
+- VPS hosting assumptions for `040415.xyz`.
+- Nginx reverse proxy and static deployment notes.
+- Serverless compatibility notes and API Gateway rate-limit recommendation.
 - Known future extensions:
   - Backend STT.
   - Image generation.
@@ -682,11 +711,12 @@ Recommended implementation order:
 8. Implement voice state machine, TTS, barge-in, earcons, and text debug fallback.
 9. Implement PendingPlan confirmation flow.
 10. Implement CanvasDescriber and EntityResolver with scoring heuristics.
-11. Implement local Node/Express API proxy and LLM provider.
-12. Add domestic Serverless deployment adapter documentation.
-13. Add export, auto-save, and restore.
-14. Update `docs/DESIGN.md` with planned, implemented, and unfinished sections.
-15. Run unit tests, build, and manual voice acceptance checks.
+11. Implement Node/Express API proxy and LLM provider for local and VPS deployment.
+12. Add VPS/Nginx deployment documentation for `040415.xyz`.
+13. Add domestic Serverless compatibility documentation.
+14. Add export, auto-save, and restore.
+15. Update `docs/DESIGN.md` with planned, implemented, and unfinished sections.
+16. Run unit tests, build, and manual voice acceptance checks.
 
 ## 20. Implementation Defaults
 

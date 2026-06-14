@@ -68,6 +68,7 @@ Before implementation starts:
 - Keep planning and coding separate. Do not start goal mode or code changes until the current plan has been reviewed and approved by the user.
 - Use `D:\Project\voice-canvas\DESIGN.md` as the visual design reference for the app shell and UI polish.
 - Use the MVP design spec and PR roadmap under `docs/superpowers/` as the implementation contract.
+- Treat the MVP production target as the provided Ubuntu 22.04 VPS for `https://040415.xyz` and `https://www.040415.xyz`: static frontend files deploy to `/var/www/040415.xyz/html`, and backend API routes should run behind Nginx on `127.0.0.1:3000`. Keep the API stateless enough for future Serverless migration, but do not plan the first production path as Serverless-first.
 
 During goal-mode implementation:
 - Work through small PRs. Each PR should implement or modify one feature only.
