@@ -35,6 +35,11 @@
   align-items: center;
 }
 
+.voiceControlForm-compact {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .voiceControlForm input {
   min-width: 0;
   height: 38px;
