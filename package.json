@@ -5,21 +5,29 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "api:dev": "tsx api/agent/server.ts",
+    "api:start": "node --import tsx api/agent/server.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@dagrejs/dagre": "^3.0.0",
+    "cors": "^2.8.6",
     "d3-hierarchy": "^3.1.2",
+    "express": "^5.2.1",
     "fabric": "^7.4.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.60.0",
+    "@types/cors": "^2.8.19",
     "@types/d3-hierarchy": "^3.1.7",
+    "@types/express": "^5.0.6",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -29,6 +37,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "jsdom": "^29.1.1",
+    "tsx": "^4.22.4",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12",
