@@ -35,6 +35,7 @@ export function VoiceBar({
       </div>
       <form
         className={`voiceControlForm ${textDebugEnabled ? '' : 'voiceControlForm-compact'}`}
+        aria-label="文本调试命令"
         onSubmit={submitTextPlan}
       >
         {textDebugEnabled ? (
@@ -45,7 +46,11 @@ export function VoiceBar({
               onChange={(event) => onTextPromptChange(event.target.value)}
               placeholder="画一个用户注册登录流程图"
             />
-            <button type="submit" data-testid="submit-text-plan">
+            <button
+              type="submit"
+              aria-label="提交文本命令生成计划"
+              data-testid="submit-text-plan"
+            >
               生成计划
             </button>
           </>
@@ -54,6 +59,7 @@ export function VoiceBar({
           type="button"
           className="voiceControlSecondary"
           data-testid="undo-command"
+          aria-label="撤销上一步"
           disabled={!canUndo}
           onClick={onUndo}
         >
@@ -63,6 +69,7 @@ export function VoiceBar({
           type="button"
           className="voiceControlSecondary"
           data-testid="redo-command"
+          aria-label="重做上一步"
           disabled={!canRedo}
           onClick={onRedo}
         >

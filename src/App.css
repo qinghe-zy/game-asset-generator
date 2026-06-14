@@ -6,10 +6,38 @@
   color: #171717;
 }
 
+.skipLink {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 20;
+  transform: translateY(-140%);
+  border: 1px solid #171717;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #ffffff;
+  color: #171717;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-decoration: none;
+}
+
+.skipLink:focus {
+  transform: translateY(0);
+  outline: 2px solid #171717;
+  outline-offset: 2px;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
   min-height: 0;
+}
+
+.workspace:focus {
+  outline: 2px solid #171717;
+  outline-offset: -2px;
 }
 
 .canvasColumn {
@@ -28,6 +56,7 @@
 @media (max-width: 1080px) {
   .workspace {
     grid-template-columns: 1fr;
+    overflow: auto;
   }
 
   .canvasColumn {

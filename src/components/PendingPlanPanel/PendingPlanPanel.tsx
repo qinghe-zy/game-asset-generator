@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { AgentPlan } from '../../agent/AgentPlan'
 import './PendingPlanPanel.css'
 
@@ -15,8 +15,20 @@ export function PendingPlanPanel({
   onCancel,
   onRefine,
 }: PendingPlanPanelProps) {
+  const panelRef = useRef<HTMLElement | null>(null)
   const [refinement, setRefinement] = useState('')
   const counts = countOperations(plan)
+
+  useEffect(() => {
+    const panel = panelRef.current
+
+    if (!panel) {
+      return
+    }
+
+    panel.scrollIntoView?.({ block: 'nearest' })
+    panel.focus({ preventScroll: true })
+  }, [plan.id])
 
   const submitRefinement = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -31,7 +43,12 @@ export function PendingPlanPanel({
   }
 
   return (
-    <aside className="pendingPlanPanel" aria-label="待确认计划">
+    <aside
+      ref={panelRef}
+      className="pendingPlanPanel"
+      aria-label="待确认计划"
+      tabIndex={-1}
+    >
       <div className="pendingPlanContent">
         <p className="pendingPlanEyebrow">Pending plan</p>
         <h2>{plan.summary}</h2>
