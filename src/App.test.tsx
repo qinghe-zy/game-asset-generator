@@ -56,6 +56,10 @@ describe('App pending plan runtime', () => {
       screen.querySelector<HTMLInputElement>('input[aria-label="文本兼容输入"]'),
     ).not.toBeNull()
     expect(screen.textContent).toContain('文本兼容模式')
+    expect(screen.querySelector('[aria-label="运行状态"]')).not.toBeNull()
+    expect(screen.querySelector('[aria-label="语音控制"]')).not.toBeNull()
+    expect(screen.querySelector('[aria-label="命令日志"]')).not.toBeNull()
+    expect(screen.textContent).toContain('STT 文本兜底')
   })
 
   it('creates and executes a pending plan from text input', () => {
@@ -88,5 +92,58 @@ describe('App pending plan runtime', () => {
       label: '打开入口',
     })
     expect(screen.textContent).toContain('已执行')
+    expect(screen.textContent).toContain('提交：画一个用户注册登录流程图')
+    expect(screen.textContent).toContain('计划：创建注册登录流程')
+    expect(screen.textContent).toContain('执行：创建注册登录流程')
+  })
+
+  it('records cancellation and undo redo outcomes in the command log', () => {
+    const screen = renderApp()
+    const input = screen.querySelector<HTMLInputElement>(
+      'input[aria-label="文本兼容输入"]',
+    )
+    const submit = screen.querySelector<HTMLButtonElement>(
+      'button[data-testid="submit-text-plan"]',
+    )
+
+    expect(input).not.toBeNull()
+    expect(submit).not.toBeNull()
+
+    changeInput(input!, '帮我整理一个新产品想法')
+    click(submit!)
+
+    const cancel = screen.querySelector<HTMLButtonElement>(
+      'button[data-testid="cancel-pending-plan"]',
+    )
+
+    expect(cancel).not.toBeNull()
+    click(cancel!)
+
+    expect(screen.textContent).toContain('取消：待执行计划')
+
+    changeInput(input!, '画一个用户注册登录流程图')
+    click(submit!)
+
+    const execute = screen.querySelector<HTMLButtonElement>(
+      'button[data-testid="execute-pending-plan"]',
+    )
+    expect(execute).not.toBeNull()
+    click(execute!)
+
+    const undo = screen.querySelector<HTMLButtonElement>(
+      'button[data-testid="undo-command"]',
+    )
+    const redo = screen.querySelector<HTMLButtonElement>(
+      'button[data-testid="redo-command"]',
+    )
+
+    expect(undo).not.toBeNull()
+    expect(redo).not.toBeNull()
+
+    click(undo!)
+    click(redo!)
+
+    expect(screen.textContent).toContain('撤销：上一步操作')
+    expect(screen.textContent).toContain('重做：上一步操作')
   })
 })
